@@ -3,7 +3,7 @@ An interpreter for somewhat adapted Lisp sourcecode. I have worked on this progr
 
 This interpreter can process simple source code, which is written in the programming language Lisp.
 
-Lisp sourcecode consits of multiple lists in a single file, which are sourrounded by parenthesis:
+Lisp source code consists of multiple lists in a single file, which are sourrounded by parenthesis:
 ```lisp
 (var A)       ;;Declare a new variable with the name A.
 (setf A 2.5)  ;;Set the value of A to 2.5
