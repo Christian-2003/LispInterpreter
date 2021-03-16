@@ -435,11 +435,11 @@ public class Interpreter {
 				ReturnValue<Boolean> returnBooleanComparison = interpret_booleanComparison(ptAbstractSyntaxTree);
 				if (returnBooleanComparison.getReturnValue() == true) {
 					//Der Wert lautet "true":
-					r = new ReturnValue<String>("T", returnBooleanComparison.getExecutionInformation());
+					r = new ReturnValue<String>(KeywordTypes.BOOLEAN_T, returnBooleanComparison.getExecutionInformation());
 				}
 				else {
 					//Der Wert lautet "false":
-					r = new ReturnValue<String>("NIL", returnBooleanComparison.getExecutionInformation());
+					r = new ReturnValue<String>(KeywordTypes.BOOLEAN_F, returnBooleanComparison.getExecutionInformation());
 				}
 			}
 			else {

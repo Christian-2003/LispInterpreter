@@ -125,7 +125,7 @@ public class Controller {
 		
 		if (firstTokenObj.getType().equals(TokenTypes.TOKEN_KEYWORD)) {
 			//Der erste Token ist ein Schluesselwort (z.B. "setf"):
-			if (firstTokenObj.getValue().equals("var")) {
+			if (firstTokenObj.getValue().equals(KeywordTypes.KEYWORD_VAR)) {
 				//Es soll eine neue Variable deklariert werden:
 				Token variableName = new Token(null, null); //Speichert den Token des Variablennamens.
 				variableName = plTokensObj.poll();
@@ -149,7 +149,7 @@ public class Controller {
 				}
 			}
 			
-			else if (firstTokenObj.getValue().equals("setf")) {
+			else if (firstTokenObj.getValue().equals(KeywordTypes.KEYWORD_SETF)) {
 				//Der Wert einer Variablen soll geaendert werden:
 				Token variableNameObj = new Token(null, null); //Speichert den Token des Variablennamens.
 				variableNameObj = plTokensObj.poll();
@@ -186,7 +186,7 @@ public class Controller {
 				}
 			}
 			
-			else if (firstTokenObj.getValue().equals("print")) {
+			else if (firstTokenObj.getValue().equals(KeywordTypes.KEYWORD_PRINT)) {
 				Token printTokenObj = new Token(null, null); //Speichert den Token, welcher ausgegeben werden soll.
 				printTokenObj = plTokensObj.poll();
 				String sPrint = ""; //Speichert den Inhalt, welcher in der Konsole ausgegeben werden soll.
@@ -246,7 +246,7 @@ public class Controller {
 				System.out.print(sPrint);
 			}
 			
-			else if (firstTokenObj.getValue().equals("println")) {
+			else if (firstTokenObj.getValue().equals(KeywordTypes.KEYWORD_PRINTLN)) {
 				Token printTokenObj = new Token(null, null); //Speichert den Token, welcher ausgegeben werden soll.
 				printTokenObj = plTokensObj.poll();
 				String sPrint = ""; //Speichert den Inhalt, welcher in der Konsole ausgegeben werden soll.
@@ -306,7 +306,7 @@ public class Controller {
 				System.out.println(sPrint);
 			}
 			
-			else if (firstTokenObj.getValue().equals("scan")) {
+			else if (firstTokenObj.getValue().equals(KeywordTypes.KEYWORD_SCAN)) {
 				//Die eingabe des Benutzers soll eingelesen werden:
 				Token variableObj = plTokensObj.poll(); //Speichert den Bezeichner der Variablen, in der die Eingabe gespeichert werden soll.
 				if (!variableObj.getType().equals(TokenTypes.TOKEN_IDENTIFIER)) {
@@ -329,7 +329,7 @@ public class Controller {
 					//Bei der Eingabe handelt es sich um eine Zahl:
 					newVariableValueObj = new Atom(variableObj.getValue(), sInput, TokenTypes.TOKEN_NUMBER);
 				}
-				else if (sInput.equals("NIL") || sInput.equals("nil") || sInput.equals("T") || sInput.equals("t")) {
+				else if (sInput.equals(KeywordTypes.BOOLEAN_T) || sInput.equals(KeywordTypes.BOOLEAN_F)) {
 					//Bei der Eingabe handelt es sich um einen Wahrheitswert:
 					newVariableValueObj = new Atom(variableObj.getValue(), sInput, TokenTypes.TOKEN_BOOLEAN);
 				}
@@ -344,7 +344,7 @@ public class Controller {
 				}
 			}
 			
-			else if (firstTokenObj.getValue().equals("if")) {
+			else if (firstTokenObj.getValue().equals(KeywordTypes.KEYWORD_IF)) {
 				//Es handelt sich um eine if-Verzweigung:
 				LinkedList<Token> lConditionObj = new LinkedList<Token>(); //Speichert die Bedingung der Verzweigung.
 				LinkedList<Token> lExpressionObj = new LinkedList<Token>(); //Speichert die Anweisungen.
@@ -397,7 +397,7 @@ public class Controller {
 				}
 			}
 			
-			else if (firstTokenObj.getValue().equals("while")) {
+			else if (firstTokenObj.getValue().equals(KeywordTypes.KEYWORD_WHILE)) {
 				//Es handelt sich um eine while-Schleife:
 				LinkedList<Token> lConditionObj = new LinkedList<Token>(); //Speichert die Bedingung der Schleife.
 				LinkedList<Token> lExpressionObj = new LinkedList<Token>(); //Speichert die Anweisungen.
@@ -448,6 +448,10 @@ public class Controller {
 					//Es ist ein Fehler aufgetreten:
 					return new ReturnValue<Object>(null, ifReturn.getExecutionInformation());
 				}
+			}
+			
+			else if (firstTokenObj.getValue().equals(KeywordTypes.KEYWORD_DEFINE)) {
+				
 			}
 			
 			else {
@@ -546,11 +550,11 @@ public class Controller {
 			return new ReturnValue<Boolean>(false, sResultObj.getExecutionInformation());
 		}
 		
-		if (sResultObj.getReturnValue().equals("T")) {
+		if (sResultObj.getReturnValue().equals(KeywordTypes.BOOLEAN_T)) {
 			//Die Bedingung ist wahr:
 			return new ReturnValue<Boolean>(true, ReturnValueTypes.SUCCESS);
 		}
-		else if (sResultObj.getReturnValue().equals("NIL")) {
+		else if (sResultObj.getReturnValue().equals(KeywordTypes.BOOLEAN_F)) {
 			//Die Bedingung ist falsch:
 			return new ReturnValue<Boolean>(false, ReturnValueTypes.SUCCESS);
 		}

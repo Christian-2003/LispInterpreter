@@ -151,49 +151,40 @@ public class Tokenizer {
 				sIdentifier = sIdentifier.toLowerCase(); //-> Damit Gross- / Kleinschreibung nicht "wichtig" ist.
 				Token currentTokenObj;
 				//Ueberpruefen, ob es sich beim aktuellen Bezeichner um ein Schluesselwort handelt:
-				switch (sIdentifier) {
-				case "var":
+				if (sIdentifier.equals(KeywordTypes.KEYWORD_VAR)) {
 					currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
-					break;
-					
-				case "setf":
+				}
+				else if (sIdentifier.equals(KeywordTypes.KEYWORD_SETF)) {
 					currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
-					break;
-					
-				case "print":
+				}
+				else if (sIdentifier.equals(KeywordTypes.KEYWORD_PRINT)) {
 					currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
-					break;
-					
-				case "println":
+				}
+				else if (sIdentifier.equals(KeywordTypes.KEYWORD_PRINTLN)) {
 					currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
-					break;
-					
-				case "if":
+				}
+				else if (sIdentifier.equals(KeywordTypes.KEYWORD_IF)) {
 					currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
-					break;
-					
-				case "while":
+				}
+				else if (sIdentifier.equals(KeywordTypes.KEYWORD_WHILE)) {
 					currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
-					break;
-					
-				case "scan":
+				}
+				else if (sIdentifier.equals(KeywordTypes.KEYWORD_SCAN)) {
 					currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
-					break;
-					
-				case "t":
+				}
+				else if (sIdentifier.equals(KeywordTypes.KEYWORD_DEFINE)) {
+					currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
+				}
+				else if (sIdentifier.equals(KeywordTypes.BOOLEAN_T)) {
 					currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_BOOLEAN);
-					break;
-					
-				case "nil":
+				}
+				else if (sIdentifier.equals(KeywordTypes.BOOLEAN_F)) {
 					currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_BOOLEAN);
-					break;
-					
-				default:
+				}
+				else {
 					//Es handelt sich nicht um ein Schluesselwort:
 					currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_IDENTIFIER);
-					break;
 				}
-				
 				lTokens.add(currentTokenObj);
 				return i - 1;
 			}
@@ -204,49 +195,40 @@ public class Tokenizer {
 		Token currentTokenObj;
 		sIdentifier = sIdentifier.toLowerCase(); //-> Damit Gross- / Kleinschreibung nicht "wichtig" ist.
 		//Ueberpruefen, ob es sich beim aktuellen Bezeichner um ein Schluesselwort handelt:
-		switch (sIdentifier) {
-		case "var":
+		if (sIdentifier.equals(KeywordTypes.KEYWORD_VAR)) {
 			currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
-			break;
-			
-		case "setf":
+		}
+		else if (sIdentifier.equals(KeywordTypes.KEYWORD_SETF)) {
 			currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
-			break;
-			
-		case "print":
+		}
+		else if (sIdentifier.equals(KeywordTypes.KEYWORD_PRINT)) {
 			currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
-			break;
-			
-		case "println":
+		}
+		else if (sIdentifier.equals(KeywordTypes.KEYWORD_PRINTLN)) {
 			currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
-			break;
-			
-		case "if":
+		}
+		else if (sIdentifier.equals(KeywordTypes.KEYWORD_IF)) {
 			currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
-			break;
-			
-		case "while":
+		}
+		else if (sIdentifier.equals(KeywordTypes.KEYWORD_WHILE)) {
 			currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
-			break;
-			
-		case "scan":
+		}
+		else if (sIdentifier.equals(KeywordTypes.KEYWORD_SCAN)) {
 			currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
-			break;
-			
-		case "t":
+		}
+		else if (sIdentifier.equals(KeywordTypes.KEYWORD_DEFINE)) {
+			currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
+		}
+		else if (sIdentifier.equals(KeywordTypes.BOOLEAN_T)) {
 			currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_BOOLEAN);
-			break;
-			
-		case "nil":
+		}
+		else if (sIdentifier.equals(KeywordTypes.BOOLEAN_F)) {
 			currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_BOOLEAN);
-			break;
-			
-		default:
+		}
+		else {
 			//Es handelt sich nicht um ein Schluesselwort:
 			currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_IDENTIFIER);
-			break;
 		}
-		
 		lTokens.add(currentTokenObj);
 		return sSourceCode.length();
 	}
