@@ -41,6 +41,11 @@ public class Controller {
 	 */
 	private LinkedList<String> lsSourceCode;
 	
+	/**
+	 * Dieses Attribut speichert alle Funktionen.
+	 */
+	private LinkedList<Function> lFunctionsObj;
+	
 	
 	
 	/**
@@ -55,6 +60,7 @@ public class Controller {
 		parserObj = new Parser();
 		interpreterObj = new Interpreter();
 		lsSourceCode = new LinkedList<String>();
+		lFunctionsObj = new LinkedList<Function>();
 		
 		ReturnValue<LinkedList<String>> outputFileScannerObj = new ReturnValue<LinkedList<String>>();
 		outputFileScannerObj = FileScanner.readFile(psFileName);
@@ -79,13 +85,50 @@ public class Controller {
 			LinkedList<Token> lTokensObj = new LinkedList<Token>(); //Speichert den aktuellen Ausdruck im Quellcode als Tokens.
 			lTokensObj.addAll(tokenizerObj.tokenize(lsSourceCode.get(i)));
 			
-			returnObj = process(lTokensObj); //Startet die process-Methode, welche das Schluesselwort verwertet.
-			if (returnObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
-				//FEHLER: Die process-Methode gab eine Fehlermeldung zurueck:
-				printErrorMessage("error> ", returnObj.getExecutionInformation(), "");
+			//Jeden Ausdruck in eine Funktion umwandeln:
+			Token tokenObj = lTokensObj.poll();
+			if (!tokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+				//Der erste Token ist keien geoeffnete Klammer: Syntaxfehler
+				printErrorMessage("error> ", ReturnValueTypes.ERROR_SYNTAX, "");
 				return;
 			}
+			tokenObj = lTokensObj.poll();
+			if (!tokenObj.getValue().equals(KeywordTypes.KEYWORD_DEFINE)) {
+				//Erstes Schluesselwort ist nicht "defun": Dyntaxfehler
+				printErrorMessage("error> ", ReturnValueTypes.ERROR_SYNTAX, "");
+				return;
+			}
+			Function currentFunctionObj = new Function(lTokensObj);
+			lFunctionsObj.add(currentFunctionObj);
 		}
+		
+		//Herausfinden, mit welcher Funktion gestartet werden soll.
+		for (int i = 0; i < lFunctionsObj.size(); i++) {
+			if (lFunctionsObj.get(i).getName().equals(KeywordTypes.FUNCTION_MAIN)) {
+				//Startfunktion gefunden:
+				LinkedList<Atom> lParameterObj = new LinkedList<Atom>();
+				lParameterObj = lFunctionsObj.get(i).getParameters();
+				if (lParameterObj.size() != 0) {
+					//Es sind Parameter vorhanden: Syntaxfehler (main-Funktion erhaelt keine Parameter).
+					printErrorMessage("error> ", ReturnValueTypes.ERROR_MAIN_FUNCTION_HAS_PARAMETER, " no parameters are allowed.");
+					return;
+				}
+				
+				for (int j = 0; j < lFunctionsObj.get(i).getExpressionAmount(); j++) {
+					//Ausdruecke verarbeiten:
+					ReturnValue<Object> processReturnObj = process(lFunctionsObj.get(i).getExpression(j));
+					if (processReturnObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+						//Es kam zu einem Fehler:
+						printErrorMessage("error> ", processReturnObj.getExecutionInformation(), "");
+						return;
+					}
+				}
+				return; //Beenden, nachdem alle Ausdruecke verarbeitet wurden.
+			}
+		}
+		//Startfunktion nicht gefunden:
+		printErrorMessage("fatalError> ", ReturnValueTypes.ERROR_NO_MAIN_FUNCTION, "");
+		return;
 	}
 	
 	
@@ -450,24 +493,44 @@ public class Controller {
 				}
 			}
 			
-			else if (firstTokenObj.getValue().equals(KeywordTypes.KEYWORD_DEFINE)) {
-				
-			}
-			
 			else {
 				//Unbekanntes Schluesselwort -> FEHLER:
 				return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_UNKNOWN_TOKEN);
 			}
 			
 			//Ueberpruefen, ob noch weitere Tokens in der Liste vorhanden sind:
-			if (!plTokensObj.peek().getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
+			if (plTokensObj.peek() != null && !plTokensObj.peek().getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
 				//Es kommen noch weitere Tokens vor, bei welchen es sich nicht um geschlossene Klammern handelt (SYNTAXFEHLER):
 				//System.out.println("DEBUG = " + plTokensObj.peek().getValue());
 				return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_SYNTAX);
 			}
 		}
+		else if (firstTokenObj.getType().equals(TokenTypes.TOKEN_IDENTIFIER)) {
+			//Der erste Token ist ein Bezeichner -> Aufruf einer Funktion:
+			
+			//Funktion herausfinden:
+			boolean bFunctionFound = false;
+			for (int i = 0; i < lFunctionsObj.size(); i++) {
+				if (lFunctionsObj.get(i).getName().equals(firstTokenObj.getValue())) {
+					//Funktion ist vorhanden:
+					bFunctionFound = true;
+					for (int j = 0; j < lFunctionsObj.get(i).getExpressionAmount(); j++) {
+						ReturnValue<Object> processReturnObj = process(lFunctionsObj.get(i).getExpression(j));
+						if (processReturnObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+							//Ein Fehler ist aufgetreten:
+							return processReturnObj;
+						}
+					}
+				}
+			}
+			if (!bFunctionFound) {
+				//Funktion wurde nicht gefunden:
+				return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_UNKNOWN_IDENTIFIER);
+			}
+			
+		}
 		else {
-			//Der erste Token ist kein Schluesselwort -> SYNTAX FEHLER:
+			//Der erste Token ist kein Schluesselwort und kein Bezeichner -> SYNTAX FEHLER:
 			return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_SYNTAX);
 		}
 		return new ReturnValue<Object>(null, ReturnValueTypes.SUCCESS);
@@ -739,6 +802,12 @@ public class Controller {
 		else if (pnErrorMessage == ReturnValueTypes.ERROR_FILE_CANNOT_BE_READ) {
 			System.out.print("cannot read file");
 		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_NO_MAIN_FUNCTION) {
+			System.out.print("main function is missing");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_MAIN_FUNCTION_HAS_PARAMETER) {
+			System.out.print("main function has too many parameters.");
+		}
 		else {
 			System.out.print("unknwon error occured. Error message: " + pnErrorMessage);
 		}
@@ -763,4 +832,5 @@ public class Controller {
 		}
 		return true;
 	}
+	
 }

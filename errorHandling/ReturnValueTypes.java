@@ -94,4 +94,16 @@ public class ReturnValueTypes {
 	 * jedoch nicht gelesen werden kann.
 	 */
 	public static int ERROR_FILE_CANNOT_BE_READ = 13;
+	
+	/**
+	 * Dieses Attribut speichert die Fehlermeldung fuer einen Quellcode, in welchem keine main-
+	 * Funktion enthalten ist.
+	 */
+	public static int ERROR_NO_MAIN_FUNCTION = 14;
+	
+	/**
+	 * Dieses Attribut speichert die Fehlermeldung fuer einen Fehler, bei welchem die Startfunktion
+	 * einen (oder mehr) Parameter besitzt.
+	 */
+	public static int ERROR_MAIN_FUNCTION_HAS_PARAMETER = 15;
 }

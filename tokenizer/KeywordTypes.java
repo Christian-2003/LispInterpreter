@@ -53,6 +53,12 @@ public class KeywordTypes {
 	
 	
 	
+	// --- BEZEICHNER DER MEIN-FUNKTION --------------------------------------------------------------------------
+	
+	public static String FUNCTION_MAIN = "main";
+	
+	
+	
 	// --- WAHRHEITSWERTE --------------------------------------------------------------------------
 	
 	/**
