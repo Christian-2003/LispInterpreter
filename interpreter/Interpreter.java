@@ -61,6 +61,22 @@ public class Interpreter {
 	
 	
 	/**
+	 * Diese Funktion aendert die Atome, die in dieser Funktion zur Verfuegung stehen.
+	 * 
+	 * @param plNewFunctionParameterObj	Neue Atome, welche zur Verfuegung stehen sollen.
+	 * @return							Alte Atome.
+	 */
+	public LinkedList<Atom> changeFunctionAtoms(LinkedList<Atom> plNewFunctionParameterObj) {
+		LinkedList<Atom> lOldAtomsObj = new LinkedList<Atom>();
+		lOldAtomsObj.addAll(lAtomsObj);
+		lAtomsObj.clear();
+		lAtomsObj.addAll(plNewFunctionParameterObj);
+		return lOldAtomsObj;
+	}
+	
+	
+	
+	/**
 	 * Diese Methode ersetzt ein Atom in der Liste an Atomen.
 	 * 
 	 * @param pAtomObj	Atom, durch welches ersetzt werden soll.

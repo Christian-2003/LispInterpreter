@@ -115,6 +115,14 @@ public class Function {
 		*/
 	}
 	
+	/**
+	 * Standartkonstruktor der Klasse "Function" erstellt eine leere Funktion, ohne Quellcode und Parameter.
+	 */
+	public Function() {
+		lParametersObj = new LinkedList<Atom>();
+		llExpressionsObj = new LinkedList<LinkedList<Token>>();
+	}
+	
 	
 	
 	/**
@@ -128,21 +136,31 @@ public class Function {
 	
 	/**
 	 * Diese Methode gibt die Liste an Parametern zurueck.
-	 * @return
+	 * 
+	 * @return	Liste der Parameter
 	 */
 	public LinkedList<Atom> getParameters() {
 		return lParametersObj;
 	}
 	
 	/**
+	 * Diese Methode gibt die Anzahl an Parametern zurueck.
+	 * 
+	 * @return	Anzahl der Parameter.
+	 */
+	public int getParameterAmount() {
+		return lParametersObj.size();
+	}
+	
+	/**
 	 * Diese Methode gibt den Ausdruck mit dem Index nIndex als Token-Liste zurueck.
 	 * 
-	 * @param nIndex	Index des Ausdrucks.
+	 * @param pnIndex	Index des Ausdrucks.
 	 * 
 	 * @return			Ausdruck als Token-Liste.
 	 */
-	public LinkedList<Token> getExpression(int nIndex) {
-		return llExpressionsObj.get(nIndex);
+	public LinkedList<Token> getExpression(int pnIndex) {
+		return llExpressionsObj.get(pnIndex);
 	}
 	
 	/**
@@ -153,6 +171,38 @@ public class Function {
 	public int getExpressionAmount() {
 		return llExpressionsObj.size();
 	}
+	
+	
+	
+	/**
+	 * 
+	 */
+	public ReturnValue<Object> importParameterValues(LinkedList<String> plsValues) {
+		if (plsValues.size() == lParametersObj.size()) {
+			//Es wurde die korrekte Anzahl an Parametern angegeben:
+			
+			for (int i = 0; i < plsValues.size(); i++) {
+				if (isNumber(plsValues.get(i))) {
+					//Beim Wert handelt es sich um eine Zahl:
+					overrideAtom(new Atom(lParametersObj.get(i).getName(), plsValues.get(i), TokenTypes.TOKEN_NUMBER));
+				}
+				else if (plsValues.get(i).equals(KeywordTypes.BOOLEAN_F) || plsValues.get(i).equals(KeywordTypes.BOOLEAN_T)) {
+					//Beim Wert handelt es sich um einen Wahrheitswert:
+					overrideAtom(new Atom(lParametersObj.get(i).getName(), plsValues.get(i), TokenTypes.TOKEN_BOOLEAN));
+				}
+				else {
+					//Beim Wert handelt es sich um einen String:
+					overrideAtom(new Atom(lParametersObj.get(i).getName(), plsValues.get(i), TokenTypes.TOKEN_STRING));
+				}
+			}
+			return new ReturnValue<Object>(null, ReturnValueTypes.SUCCESS);
+			
+		}
+		else {
+			return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_INCORRECT_PARAMETER_NUMBER);
+		}
+	}
+	
 	
 	
 	/**
@@ -216,5 +266,23 @@ public class Function {
 		}
 		//Atom wurde nicht gefunden:
 		return new ReturnValue<Atom>(null, ReturnValueTypes.ERROR_UNKNOWN_IDENTIFIER);
+	}
+	
+	
+	
+	/**
+	 * Diese Methode ueberpruft, ob es sich bei dem als Parameter angegebenen String um eine Zahl handelt.
+	 * 
+	 * @param psNumber	String, welcher ueberprueft werden soll.
+	 * @return			Gibt an, ob es sich bei dem String um eine Zahl handelt.
+	 */
+	private boolean isNumber(String psNumber) {
+		try {
+			double nNumber = Double.parseDouble(psNumber);
+		}
+		catch (NumberFormatException exceptionObj) {
+			return false;
+		}
+		return true;
 	}
 }

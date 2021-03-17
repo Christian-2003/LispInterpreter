@@ -106,4 +106,10 @@ public class ReturnValueTypes {
 	 * einen (oder mehr) Parameter besitzt.
 	 */
 	public static int ERROR_MAIN_FUNCTION_HAS_PARAMETER = 15;
+	
+	/**
+	 * Dieses Attribut speichert die Fehlermeldung fuer einen Fehler, bei welchem eine inkorrekte
+	 * Anzahl an Parametern einer Funktion uebergeben wurde.
+	 */
+	public static int ERROR_INCORRECT_PARAMETER_NUMBER = 16;
 }

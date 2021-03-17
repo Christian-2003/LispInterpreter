@@ -46,6 +46,11 @@ public class Controller {
 	 */
 	private LinkedList<Function> lFunctionsObj;
 	
+	/**
+	 * Speichert die Funktion, welche aktuell ausgefuehrt wird.
+	 */
+	private Function currentFunctionInUse;
+	
 	
 	
 	/**
@@ -113,7 +118,7 @@ public class Controller {
 					printErrorMessage("error> ", ReturnValueTypes.ERROR_MAIN_FUNCTION_HAS_PARAMETER, " no parameters are allowed.");
 					return;
 				}
-				
+				interpreterObj.changeFunctionAtoms(lFunctionsObj.get(i).getParameters());
 				for (int j = 0; j < lFunctionsObj.get(i).getExpressionAmount(); j++) {
 					//Ausdruecke verarbeiten:
 					ReturnValue<Object> processReturnObj = process(lFunctionsObj.get(i).getExpression(j));
@@ -514,6 +519,54 @@ public class Controller {
 				if (lFunctionsObj.get(i).getName().equals(firstTokenObj.getValue())) {
 					//Funktion ist vorhanden:
 					bFunctionFound = true;
+					//Parameter herausarbeiten:
+					if (!plTokensObj.poll().getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+						//Naechstes Symbol ist keine geoeffnete Klammer -> Syntaxfehler:
+						return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_SYNTAX);
+					}
+					int nClosedBrackets = 0;
+					int nOpenedBrackets = 1;
+					LinkedList<Token> lParametersObj = new LinkedList<Token>();
+					while (!plTokensObj.isEmpty()) {
+						Token currentTokenObj = new Token(plTokensObj.peek().getValue(), plTokensObj.poll().getType());
+						if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
+							nClosedBrackets++;
+						}
+						else if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+							nOpenedBrackets++;
+						}
+						else {
+							if (currentTokenObj.getType().equals(TokenTypes.TOKEN_IDENTIFIER)) {
+								//Bezeichner gefunden: Wert laden:
+								ReturnValue<Atom> variableRegisterQueryObj = new ReturnValue<Atom>();
+								variableRegisterQueryObj = interpreterObj.searchAtom(currentTokenObj.getValue());
+								if (variableRegisterQueryObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+									//Es kam zu einem Fehler:
+									return new ReturnValue<Object>(null, variableRegisterQueryObj.getExecutionInformation());
+								}
+								Token valueObj = new Token(variableRegisterQueryObj.getReturnValue().getValue(), variableRegisterQueryObj.getReturnValue().getType());
+								lParametersObj.add(valueObj);
+								continue;
+							}
+							
+							lParametersObj.add(currentTokenObj);
+						}
+						if (nOpenedBrackets == nClosedBrackets) {
+							//Es wurden gleich viele Klammern geoeffnet und geschlossen:
+							break;
+						}
+						
+					}
+					if (lParametersObj.size() != lFunctionsObj.get(i).getParameterAmount()) {
+						//Es wurde eine inkorrekte Anzahl an Parametern angegeben:
+						return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_INCORRECT_PARAMETER_NUMBER);
+					}
+					LinkedList<Atom> lNewParametersObj = new LinkedList<Atom>();
+					for (int j = 0; j < lParametersObj.size(); j++) {
+						lNewParametersObj.add(new Atom(lFunctionsObj.get(i).getParameters().get(j).getName(), lParametersObj.get(j).getValue(), lParametersObj.get(j).getType()));
+					}
+					LinkedList<Atom> lOldParametersObj = new LinkedList<Atom>(interpreterObj.changeFunctionAtoms(lNewParametersObj));
+					//Ausdruecke ausfuehren:
 					for (int j = 0; j < lFunctionsObj.get(i).getExpressionAmount(); j++) {
 						ReturnValue<Object> processReturnObj = process(lFunctionsObj.get(i).getExpression(j));
 						if (processReturnObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
@@ -521,6 +574,8 @@ public class Controller {
 							return processReturnObj;
 						}
 					}
+					//Alte Parameter wieder anfuegen:
+					interpreterObj.changeFunctionAtoms(lOldParametersObj);
 				}
 			}
 			if (!bFunctionFound) {
@@ -808,6 +863,9 @@ public class Controller {
 		else if (pnErrorMessage == ReturnValueTypes.ERROR_MAIN_FUNCTION_HAS_PARAMETER) {
 			System.out.print("main function has too many parameters.");
 		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_INCORRECT_PARAMETER_NUMBER) {
+			System.out.print("the function call has an incorrect number of arguments.");
+		}
 		else {
 			System.out.print("unknwon error occured. Error message: " + pnErrorMessage);
 		}
@@ -831,6 +889,35 @@ public class Controller {
 			return false;
 		}
 		return true;
+	}
+	
+	
+	
+	/**
+	 * Diese Methode erhaelt als Parameter einen String, und gibt einen Token zuruck, welcher Wert und
+	 * Typen speichert.
+	 * @param psValue	Wert, wessen Typ herausgefunden werden soll.
+	 * @return			Wert und Typ.
+	 */
+	private ReturnValue<Token> findValue(String psValue) {
+		if (isNumber(psValue)) {
+			//Es handelt sich um eine Zahl:
+			return new ReturnValue<Token>(new Token(psValue, TokenTypes.TOKEN_NUMBER), ReturnValueTypes.SUCCESS);
+		}
+		else if (psValue.equals(KeywordTypes.BOOLEAN_F) || psValue.equals(KeywordTypes.BOOLEAN_T)) {
+			//Es handelt sich um einen Wahrheitswert:
+			return new ReturnValue<Token>(new Token(psValue, TokenTypes.TOKEN_BOOLEAN), ReturnValueTypes.SUCCESS);
+		}
+		else if (interpreterObj.searchAtom(psValue).getExecutionInformation() == ReturnValueTypes.SUCCESS) {
+			//Es handelt sich um einen Bezeichner einer Variablen:
+			ReturnValue<Atom> registerQueryObj = new ReturnValue<Atom>();
+			registerQueryObj = interpreterObj.searchAtom(psValue);
+			return new ReturnValue<Token>(new Token(registerQueryObj.getReturnValue().getValue(), registerQueryObj.getReturnValue().getType()), registerQueryObj.getExecutionInformation());
+		}
+		else {
+			//Es handelt sich um einen unbekannten Token:
+			return new ReturnValue<Token>(null, ReturnValueTypes.ERROR_UNKNOWN_TOKEN);
+		}
 	}
 	
 }
