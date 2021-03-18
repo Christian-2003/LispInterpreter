@@ -64,10 +64,10 @@ public class KeywordTypes {
 	/**
 	 * Speichert den Wahrheitswert "true".
 	 */
-	public static String BOOLEAN_T = "T";
+	public static String BOOLEAN_T = "t";
 	
 	/**
 	 * Speichert den Wahrheitswert "false".
 	 */
-	public static String BOOLEAN_F = "NIL";
+	public static String BOOLEAN_F = "nil";
 }

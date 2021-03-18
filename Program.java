@@ -17,7 +17,7 @@ public class Program {
 	 * gespeichert ist. Danach wird der Quellcode ausgefuehrt.
 	 */
 	public static void main(String[] args) {
-		System.out.println("Interpreter for Lisp by Christian Steinbring\n");
+		System.out.println("Interpreter for Lisp by Christian S\n");
 		System.out.println("Please enter a filename in which the source code is located.");
 		System.out.print("> ");
 		

@@ -524,41 +524,67 @@ public class Controller {
 						//Naechstes Symbol ist keine geoeffnete Klammer -> Syntaxfehler:
 						return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_SYNTAX);
 					}
-					int nClosedBrackets = 0;
-					int nOpenedBrackets = 1;
 					LinkedList<Token> lParametersObj = new LinkedList<Token>();
 					while (!plTokensObj.isEmpty()) {
 						Token currentTokenObj = new Token(plTokensObj.peek().getValue(), plTokensObj.poll().getType());
-						if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
-							nClosedBrackets++;
+						if (currentTokenObj.getType().equals(TokenTypes.TOKEN_IDENTIFIER)) {
+							//Bezeichner gefunden: Wert laden:
+							ReturnValue<Atom> variableRegisterQueryObj = new ReturnValue<Atom>();
+							variableRegisterQueryObj = interpreterObj.searchAtom(currentTokenObj.getValue());
+							if (variableRegisterQueryObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+								//Es kam zu einem Fehler:
+								return new ReturnValue<Object>(null, variableRegisterQueryObj.getExecutionInformation());
+							}
+							Token valueObj = new Token(variableRegisterQueryObj.getReturnValue().getValue(), variableRegisterQueryObj.getReturnValue().getType());
+							lParametersObj.add(valueObj);
+							continue;
 						}
 						else if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
-							nOpenedBrackets++;
-						}
-						else {
-							if (currentTokenObj.getType().equals(TokenTypes.TOKEN_IDENTIFIER)) {
-								//Bezeichner gefunden: Wert laden:
-								ReturnValue<Atom> variableRegisterQueryObj = new ReturnValue<Atom>();
-								variableRegisterQueryObj = interpreterObj.searchAtom(currentTokenObj.getValue());
-								if (variableRegisterQueryObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
-									//Es kam zu einem Fehler:
-									return new ReturnValue<Object>(null, variableRegisterQueryObj.getExecutionInformation());
+							//Geoeffnete Klammer gefunden (Rechnung als Parameter):
+							int nBracketsOpened = 1;
+							int nBracketsClosed = 0;
+							LinkedList<Token> lTokensCalculationsObj = new LinkedList<Token>();
+							lTokensCalculationsObj.add(currentTokenObj);
+							//Tokens, welche zur Rechnung gehoeren heraussuchen:
+							while (!plTokensObj.isEmpty()) {
+								Token currentCalculationTokenObj = new Token(plTokensObj.peek().getValue(), plTokensObj.poll().getType());
+								if (currentCalculationTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
+									nBracketsClosed++;
 								}
-								Token valueObj = new Token(variableRegisterQueryObj.getReturnValue().getValue(), variableRegisterQueryObj.getReturnValue().getType());
-								lParametersObj.add(valueObj);
-								continue;
+								else if (currentCalculationTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+									nBracketsOpened++;
+								}
+								lTokensCalculationsObj.add(currentCalculationTokenObj);
+								if (nBracketsOpened == nBracketsClosed) {
+									//Es wurden gleich viele Klammern geschlossen und geoeffnet:
+									ReturnValue<String> calculationReturnObj = new ReturnValue<String>();
+									calculationReturnObj = calculate(lTokensCalculationsObj);
+									if (calculationReturnObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+										//Es ist ein Fehler aufgetreten:
+										return new ReturnValue<Object>(null, calculationReturnObj.getExecutionInformation());
+									}
+									lParametersObj.add(new Token(calculationReturnObj.getReturnValue(), TokenTypes.TOKEN_NUMBER));
+									break;
+								}
 							}
-							
-							lParametersObj.add(currentTokenObj);
+							continue;
 						}
-						if (nOpenedBrackets == nClosedBrackets) {
-							//Es wurden gleich viele Klammern geoeffnet und geschlossen:
+						lParametersObj.add(currentTokenObj);
+						if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
+							//Eine geschlossene Klammer (indiziert das Ende der Parameterliste) wurde gefunden:
+							lParametersObj.pollLast(); //Letztes Element entfernen (Ist aus einem unerklaerlichen Grund eine geschlossene Klammer \(*_*)/ !!!).
 							break;
 						}
 						
 					}
 					if (lParametersObj.size() != lFunctionsObj.get(i).getParameterAmount()) {
 						//Es wurde eine inkorrekte Anzahl an Parametern angegeben:
+						System.out.println("DEBUG: pla=" + lParametersObj.size() + ", pfa=" + lFunctionsObj.get(i).getParameterAmount());
+						for (int j = 0; j < lParametersObj.size(); j++) {
+							System.out.print(lParametersObj.get(j).getValue() + ", ");
+						}
+						
+						
 						return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_INCORRECT_PARAMETER_NUMBER);
 					}
 					LinkedList<Atom> lNewParametersObj = new LinkedList<Atom>();
@@ -890,34 +916,4 @@ public class Controller {
 		}
 		return true;
 	}
-	
-	
-	
-	/**
-	 * Diese Methode erhaelt als Parameter einen String, und gibt einen Token zuruck, welcher Wert und
-	 * Typen speichert.
-	 * @param psValue	Wert, wessen Typ herausgefunden werden soll.
-	 * @return			Wert und Typ.
-	 */
-	private ReturnValue<Token> findValue(String psValue) {
-		if (isNumber(psValue)) {
-			//Es handelt sich um eine Zahl:
-			return new ReturnValue<Token>(new Token(psValue, TokenTypes.TOKEN_NUMBER), ReturnValueTypes.SUCCESS);
-		}
-		else if (psValue.equals(KeywordTypes.BOOLEAN_F) || psValue.equals(KeywordTypes.BOOLEAN_T)) {
-			//Es handelt sich um einen Wahrheitswert:
-			return new ReturnValue<Token>(new Token(psValue, TokenTypes.TOKEN_BOOLEAN), ReturnValueTypes.SUCCESS);
-		}
-		else if (interpreterObj.searchAtom(psValue).getExecutionInformation() == ReturnValueTypes.SUCCESS) {
-			//Es handelt sich um einen Bezeichner einer Variablen:
-			ReturnValue<Atom> registerQueryObj = new ReturnValue<Atom>();
-			registerQueryObj = interpreterObj.searchAtom(psValue);
-			return new ReturnValue<Token>(new Token(registerQueryObj.getReturnValue().getValue(), registerQueryObj.getReturnValue().getType()), registerQueryObj.getExecutionInformation());
-		}
-		else {
-			//Es handelt sich um einen unbekannten Token:
-			return new ReturnValue<Token>(null, ReturnValueTypes.ERROR_UNKNOWN_TOKEN);
-		}
-	}
-	
 }
