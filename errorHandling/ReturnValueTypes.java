@@ -112,4 +112,10 @@ public class ReturnValueTypes {
 	 * Anzahl an Parametern einer Funktion uebergeben wurde.
 	 */
 	public static int ERROR_INCORRECT_PARAMETER_NUMBER = 16;
+	
+	/**
+	 * Dieses Attribut speichert die Fehlermeldung fuer einen Fehler, bei welchem eine Rueckgabe einer
+	 * Funktion erwartet wird, welche nicht vorhanden ist.
+	 */
+	public static int ERROR_NO_RETURN_VALUE = 17;
 }

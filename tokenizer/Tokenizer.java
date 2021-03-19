@@ -175,6 +175,9 @@ public class Tokenizer {
 				else if (sIdentifier.equals(KeywordTypes.KEYWORD_DEFINE)) {
 					currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
 				}
+				else if (sIdentifier.equals(KeywordTypes.KEYWORD_RETURN)) {
+					currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
+				}
 				else if (sIdentifier.equals(KeywordTypes.BOOLEAN_T)) {
 					currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_BOOLEAN);
 				}
@@ -217,6 +220,9 @@ public class Tokenizer {
 			currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
 		}
 		else if (sIdentifier.equals(KeywordTypes.KEYWORD_DEFINE)) {
+			currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
+		}
+		else if (sIdentifier.equals(KeywordTypes.KEYWORD_RETURN)) {
 			currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
 		}
 		else if (sIdentifier.equals(KeywordTypes.BOOLEAN_T)) {

@@ -12,6 +12,11 @@ public class KeywordTypes {
 	// --- SCHLUESSELWOERTER --------------------------------------------------------------------------
 	
 	/**
+	 * Speichert das Schluesselwort fuer eine Rueckgabe einer Funktion.
+	 */
+	public static String KEYWORD_RETURN = "return";
+	
+	/**
 	 * Speichert das Schluesselwort zum definieren einer neuen Funktion.
 	 */
 	public static String KEYWORD_DEFINE = "defun";

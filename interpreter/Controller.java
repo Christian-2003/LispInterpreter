@@ -47,9 +47,9 @@ public class Controller {
 	private LinkedList<Function> lFunctionsObj;
 	
 	/**
-	 * Speichert die Funktion, welche aktuell ausgefuehrt wird.
+	 * Speichert den Rueckgabewert der aktuellen Funktion.
 	 */
-	private Function currentFunctionInUse;
+	private Token functionReturnValueObj;
 	
 	
 	
@@ -66,6 +66,7 @@ public class Controller {
 		interpreterObj = new Interpreter();
 		lsSourceCode = new LinkedList<String>();
 		lFunctionsObj = new LinkedList<Function>();
+		functionReturnValueObj = new Token("0.00", TokenTypes.TOKEN_NUMBER);
 		
 		ReturnValue<LinkedList<String>> outputFileScannerObj = new ReturnValue<LinkedList<String>>();
 		outputFileScannerObj = FileScanner.readFile(psFileName);
@@ -498,6 +499,88 @@ public class Controller {
 				}
 			}
 			
+			else if (firstTokenObj.getValue().equals(KeywordTypes.KEYWORD_RETURN)) {
+				//Der aktuelle Funktionsaufruf soll beendet werden:
+				Token returnValueObj;
+				//Herausfinden, um welchen Wert es sich beim Rueckgabewert handelt:
+				Token nextTokenObj = plTokensObj.poll();
+				if (nextTokenObj.getType().equals(TokenTypes.TOKEN_NUMBER) || nextTokenObj.getType().equals(TokenTypes.TOKEN_STRING) || nextTokenObj.getType().equals(TokenTypes.TOKEN_BOOLEAN)) {
+					//Es handelt sich um eine Zahl, einen String, oder einen Wahrheitswert:
+					returnValueObj = new Token(nextTokenObj.getValue(), nextTokenObj.getType());
+					functionReturnValueObj = returnValueObj;
+					return new ReturnValue<Object>(null, ReturnValueTypes.SUCCESS);
+				}
+				else if (nextTokenObj.getType().equals(TokenTypes.TOKEN_IDENTIFIER)) {
+					//Es handelt sich um einen Bezeichner (einer Variablen oder Funktion):
+					if (plTokensObj.peek().getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+						//Beim naechsten Token handelt es sich um eine geoeffnete Klammer (FUNKTIONSAUFRUF):
+						LinkedList<Token> lFunctionTokensObj = new LinkedList<Token>();
+						lFunctionTokensObj.add(nextTokenObj);
+						while (!plTokensObj.isEmpty()) {
+							Token currentTokenObj = new Token(plTokensObj.peek().getValue(), plTokensObj.poll().getType());
+							lFunctionTokensObj.add(currentTokenObj);
+							if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
+								//Parameter herausgefunden:
+								break;
+							}
+						}
+						ReturnValue<Token> functionReturnObj = new ReturnValue<Token>();
+						functionReturnObj = executeFunction(lFunctionTokensObj);
+						if (functionReturnObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+							//Es ist ein Fehler aufgetreten:
+							return new ReturnValue<Object>(null, functionReturnObj.getExecutionInformation());
+						}
+						functionReturnValueObj = functionReturnObj.getReturnValue();
+					}
+					else {
+						//Es muss sich um eine Variable handeln:
+						ReturnValue<Atom> atomSearchQueryObj = new ReturnValue<Atom>();
+						atomSearchQueryObj = interpreterObj.searchAtom(nextTokenObj.getValue());
+						if (atomSearchQueryObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+							//Es ist ein Fehler aufgeteten:
+							return new ReturnValue<Object>(null, atomSearchQueryObj.getExecutionInformation());
+						}
+						returnValueObj = new Token(atomSearchQueryObj.getReturnValue().getValue(), atomSearchQueryObj.getReturnValue().getType());
+						functionReturnValueObj = returnValueObj;
+						return new ReturnValue<Object>(null, ReturnValueTypes.SUCCESS);
+					}
+				}
+				else if (nextTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+					//Es handelt sich um eine Rechnung:
+					LinkedList<Token> lCalculationTokensObj = new LinkedList<Token>();
+					lCalculationTokensObj.add(nextTokenObj);
+					int nBracketsClosed = 0;
+					int nBracketsOpened = 1;
+					while (!plTokensObj.isEmpty()) {
+						Token currentTokenObj = new Token(plTokensObj.peek().getValue(), plTokensObj.poll().getType());
+						if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
+							nBracketsClosed++;
+						}
+						else if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+							nBracketsOpened++;
+						}
+						lCalculationTokensObj.add(currentTokenObj);
+						if (nBracketsOpened == nBracketsClosed) {
+							//Tokens wurden vollstaendig herausgefunden:
+							break;
+						}
+					}
+					ReturnValue<String> calculateReturnObj = new ReturnValue<String>();
+					calculateReturnObj = calculate(lCalculationTokensObj);
+					if (calculateReturnObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+						//Es ist ein Fehler aufgetreten:
+						return new ReturnValue<Object>(null, calculateReturnObj.getExecutionInformation());
+					}
+					returnValueObj = new Token(calculateReturnObj.getReturnValue(), TokenTypes.TOKEN_NUMBER);
+					functionReturnValueObj = returnValueObj;
+					return new ReturnValue<Object>(null, ReturnValueTypes.SUCCESS);
+				}
+				else {
+					//Unbekannter Token
+					return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_UNKNOWN_TOKEN);
+				}
+			}
+			
 			else {
 				//Unbekanntes Schluesselwort -> FEHLER:
 				return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_UNKNOWN_TOKEN);
@@ -513,108 +596,155 @@ public class Controller {
 		else if (firstTokenObj.getType().equals(TokenTypes.TOKEN_IDENTIFIER)) {
 			//Der erste Token ist ein Bezeichner -> Aufruf einer Funktion:
 			
-			//Funktion herausfinden:
-			boolean bFunctionFound = false;
-			for (int i = 0; i < lFunctionsObj.size(); i++) {
-				if (lFunctionsObj.get(i).getName().equals(firstTokenObj.getValue())) {
-					//Funktion ist vorhanden:
-					bFunctionFound = true;
-					//Parameter herausarbeiten:
-					if (!plTokensObj.poll().getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
-						//Naechstes Symbol ist keine geoeffnete Klammer -> Syntaxfehler:
-						return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_SYNTAX);
-					}
-					LinkedList<Token> lParametersObj = new LinkedList<Token>();
-					while (!plTokensObj.isEmpty()) {
-						Token currentTokenObj = new Token(plTokensObj.peek().getValue(), plTokensObj.poll().getType());
-						if (currentTokenObj.getType().equals(TokenTypes.TOKEN_IDENTIFIER)) {
-							//Bezeichner gefunden: Wert laden:
-							ReturnValue<Atom> variableRegisterQueryObj = new ReturnValue<Atom>();
-							variableRegisterQueryObj = interpreterObj.searchAtom(currentTokenObj.getValue());
-							if (variableRegisterQueryObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
-								//Es kam zu einem Fehler:
-								return new ReturnValue<Object>(null, variableRegisterQueryObj.getExecutionInformation());
-							}
-							Token valueObj = new Token(variableRegisterQueryObj.getReturnValue().getValue(), variableRegisterQueryObj.getReturnValue().getType());
-							lParametersObj.add(valueObj);
-							continue;
-						}
-						else if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
-							//Geoeffnete Klammer gefunden (Rechnung als Parameter):
-							int nBracketsOpened = 1;
-							int nBracketsClosed = 0;
-							LinkedList<Token> lTokensCalculationsObj = new LinkedList<Token>();
-							lTokensCalculationsObj.add(currentTokenObj);
-							//Tokens, welche zur Rechnung gehoeren heraussuchen:
-							while (!plTokensObj.isEmpty()) {
-								Token currentCalculationTokenObj = new Token(plTokensObj.peek().getValue(), plTokensObj.poll().getType());
-								if (currentCalculationTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
-									nBracketsClosed++;
-								}
-								else if (currentCalculationTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
-									nBracketsOpened++;
-								}
-								lTokensCalculationsObj.add(currentCalculationTokenObj);
-								if (nBracketsOpened == nBracketsClosed) {
-									//Es wurden gleich viele Klammern geschlossen und geoeffnet:
-									ReturnValue<String> calculationReturnObj = new ReturnValue<String>();
-									calculationReturnObj = calculate(lTokensCalculationsObj);
-									if (calculationReturnObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
-										//Es ist ein Fehler aufgetreten:
-										return new ReturnValue<Object>(null, calculationReturnObj.getExecutionInformation());
-									}
-									lParametersObj.add(new Token(calculationReturnObj.getReturnValue(), TokenTypes.TOKEN_NUMBER));
-									break;
-								}
-							}
-							continue;
-						}
-						lParametersObj.add(currentTokenObj);
-						if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
-							//Eine geschlossene Klammer (indiziert das Ende der Parameterliste) wurde gefunden:
-							lParametersObj.pollLast(); //Letztes Element entfernen (Ist aus einem unerklaerlichen Grund eine geschlossene Klammer \(*_*)/ !!!).
-							break;
-						}
-						
-					}
-					if (lParametersObj.size() != lFunctionsObj.get(i).getParameterAmount()) {
-						//Es wurde eine inkorrekte Anzahl an Parametern angegeben:
-						System.out.println("DEBUG: pla=" + lParametersObj.size() + ", pfa=" + lFunctionsObj.get(i).getParameterAmount());
-						for (int j = 0; j < lParametersObj.size(); j++) {
-							System.out.print(lParametersObj.get(j).getValue() + ", ");
-						}
-						
-						
-						return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_INCORRECT_PARAMETER_NUMBER);
-					}
-					LinkedList<Atom> lNewParametersObj = new LinkedList<Atom>();
-					for (int j = 0; j < lParametersObj.size(); j++) {
-						lNewParametersObj.add(new Atom(lFunctionsObj.get(i).getParameters().get(j).getName(), lParametersObj.get(j).getValue(), lParametersObj.get(j).getType()));
-					}
-					LinkedList<Atom> lOldParametersObj = new LinkedList<Atom>(interpreterObj.changeFunctionAtoms(lNewParametersObj));
-					//Ausdruecke ausfuehren:
-					for (int j = 0; j < lFunctionsObj.get(i).getExpressionAmount(); j++) {
-						ReturnValue<Object> processReturnObj = process(lFunctionsObj.get(i).getExpression(j));
-						if (processReturnObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
-							//Ein Fehler ist aufgetreten:
-							return processReturnObj;
-						}
-					}
-					//Alte Parameter wieder anfuegen:
-					interpreterObj.changeFunctionAtoms(lOldParametersObj);
+			//Funktions (inkl. Parameter) herausfinden:
+			LinkedList<Token> lFunctionObj = new LinkedList<Token>();
+			lFunctionObj.add(firstTokenObj);
+			int nBracketsOpened = 0;
+			int nBracketsClosed = 0;
+			while (!plTokensObj.isEmpty()) {
+				Token currentTokenObj = plTokensObj.poll();
+				if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
+					nBracketsClosed++;
+				}
+				else if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+					nBracketsOpened++;
+				}
+				lFunctionObj.add(currentTokenObj);
+				if ((nBracketsOpened != 0 && nBracketsClosed != 0) && (nBracketsOpened == nBracketsClosed)) {
+					//Funktionsaufruf herausgefiltert:
+					break;
 				}
 			}
-			if (!bFunctionFound) {
-				//Funktion wurde nicht gefunden:
-				return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_UNKNOWN_IDENTIFIER);
-			}
 			
+			//Funktion aufrufen:
+			ReturnValue<Token> functionReturnObj = new ReturnValue<Token>();
+			functionReturnObj = executeFunction(lFunctionObj);
+			if (functionReturnObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+				//Es ist ein Fehler aufgetreten:
+				return new ReturnValue<Object>(null, functionReturnObj.getExecutionInformation());
+			}
 		}
 		else {
 			//Der erste Token ist kein Schluesselwort und kein Bezeichner -> SYNTAX FEHLER:
 			return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_SYNTAX);
 		}
 		return new ReturnValue<Object>(null, ReturnValueTypes.SUCCESS);
+	}
+	
+	
+	
+	/**
+	 * Diese Funktion fuehrt eine Funktion in Lisp aus, dazu werden ihr der Bezeichner und die Parameter - wie diese
+	 * im Quellcode vorkommen ( z.B. sin(15) ) uebergeben.
+	 * 
+	 * @param plTokensObj	Tokens des Funktionsaufrufes.
+	 * @return				Rueckgabewert der Funktion, falls vorhanden.
+	 */
+	private ReturnValue<Token> executeFunction(LinkedList<Token> plTokensObj) {
+		//Herausfinden, ob die Funktion existiert:
+		boolean bFunctionFound = false;
+		String sFunctionName = plTokensObj.poll().getValue();
+		Function currentFunctionInUse = new Function();
+		for (int i = 0; i < lFunctionsObj.size(); i++) {
+			if (lFunctionsObj.get(i).getName().equals(sFunctionName)) {
+				//Funktion existiert:
+				bFunctionFound = true;
+				currentFunctionInUse = lFunctionsObj.get(i);
+				break;
+			}
+		}
+		if (!bFunctionFound) {
+			//Funktion wurde nicht gefunden:
+			return new ReturnValue<Token>(null, ReturnValueTypes.ERROR_UNKNOWN_IDENTIFIER);
+		}
+		
+		//Parameter herausfinden:
+		LinkedList<Token> lParametersObj = new LinkedList<Token>();
+		if (!plTokensObj.poll().getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+			//Erster Token nach Bezeichner ist KEINE Klammer: SYNTAXFEHLER:
+			return new ReturnValue<Token>(null, ReturnValueTypes.ERROR_SYNTAX);
+		}
+		while (!plTokensObj.isEmpty()) {
+			Token currentTokenObj = new Token(plTokensObj.peek().getValue(), plTokensObj.poll().getType());
+			if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
+				//Geschlossene Klammer indiziert, dass alle Parameter gelesen wurden!
+				break;
+			}
+			//Herausfinden, um welchen Token es sich handelt:
+			if (currentTokenObj.getType().equals(TokenTypes.TOKEN_STRING) || currentTokenObj.getType().equals(TokenTypes.TOKEN_NUMBER) || currentTokenObj.getType().equals(TokenTypes.TOKEN_BOOLEAN)) {
+				//Es handelt sich um eine Zahl, einen String oder einen Wahrheitswert:
+				lParametersObj.add(currentTokenObj);
+			}
+			else if (currentTokenObj.getType().equals(TokenTypes.TOKEN_IDENTIFIER)) {
+				//Es handelt sich um einen Bezeichner -> Wert der Variablen aus Verzeichnis laden:
+				ReturnValue<Atom> atomSearchQueryObj = new ReturnValue<Atom>();
+				atomSearchQueryObj = interpreterObj.searchAtom(currentTokenObj.getValue());
+				if (atomSearchQueryObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+					//Es ist ein Fehler aufgetreten:
+					return new ReturnValue<Token>(null, atomSearchQueryObj.getExecutionInformation());
+				}
+				lParametersObj.add(new Token(atomSearchQueryObj.getReturnValue().getValue(), atomSearchQueryObj.getReturnValue().getType()));
+			}
+			else if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+				//Es handelt sich um eine Rechnung:
+				int nBracketsOpened = 1;
+				int nBracketsClosed = 0;
+				LinkedList<Token> lCalculationTokensObj = new LinkedList<Token>();
+				lCalculationTokensObj.add(currentTokenObj);
+				while (!plTokensObj.isEmpty()) {
+					Token currentCalculationTokenObj = plTokensObj.poll();
+					if (currentCalculationTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+						nBracketsOpened++;
+					}
+					else if (currentCalculationTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
+						nBracketsClosed++;
+					}
+					lCalculationTokensObj.add(currentCalculationTokenObj);
+					if (nBracketsOpened == nBracketsClosed) {
+						//Tokens der Rechnung vollstaending herausgefunden:
+						break;
+					}
+				}
+				ReturnValue<String> calculationReturnObj = new ReturnValue<String>();
+				calculationReturnObj = calculate(lCalculationTokensObj);
+				if (calculationReturnObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+					//Es ist ein Fehler aufgetreten:
+					return new ReturnValue<Token>(null, calculationReturnObj.getExecutionInformation());
+				}
+				lParametersObj.add(new Token(calculationReturnObj.getReturnValue(), TokenTypes.TOKEN_NUMBER));
+			}
+		}
+		
+		//Herausfinden, die Parameter in korrekter Anzahl angegeben wurden:
+		if (currentFunctionInUse.getParameterAmount() != lParametersObj.size()) {
+			//Es wurde eine inkorrekte Anzahl an Parametern angegeben:
+			return new ReturnValue<Token>(null, ReturnValueTypes.ERROR_INCORRECT_PARAMETER_NUMBER);
+		}
+		
+		//Variablen der Funktion definieren:
+		LinkedList<Atom> lOldFunctionAtomsObj = new LinkedList<Atom>();
+		LinkedList<Atom> lNewFunctionAtomsObj = new LinkedList<Atom>();
+		LinkedList<Atom> lFunctionParametersObj = new LinkedList<Atom>(currentFunctionInUse.getParameters());
+		for (int i = 0; i < lParametersObj.size(); i++) {
+			lNewFunctionAtomsObj.add(new Atom(lFunctionParametersObj.get(i).getName(), lParametersObj.get(i).getValue(), lParametersObj.get(i).getType()));
+		}
+		lOldFunctionAtomsObj.addAll(interpreterObj.changeFunctionAtoms(lNewFunctionAtomsObj));
+		
+		//Ausdruecke der Funktion ausfuehren:
+		for (int i = 0; i < currentFunctionInUse.getExpressionAmount(); i++) {
+			ReturnValue<Object> processReturnObj = new ReturnValue<Object>();
+			processReturnObj = process(currentFunctionInUse.getExpression(i));
+			if (processReturnObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+				//Es ist ein Fehler aufgetreten:
+				return new ReturnValue<Token>(null, processReturnObj.getExecutionInformation());
+			}
+		}
+		
+		//Variablen der vorherigen Funktion wiedereinfuehren:
+		interpreterObj.changeFunctionAtoms(lOldFunctionAtomsObj);
+		
+		//Funktion wurde erfolgreich ausgefuehrt:
+		return new ReturnValue<Token>(null, ReturnValueTypes.SUCCESS);
 	}
 	
 	
@@ -891,6 +1021,9 @@ public class Controller {
 		}
 		else if (pnErrorMessage == ReturnValueTypes.ERROR_INCORRECT_PARAMETER_NUMBER) {
 			System.out.print("the function call has an incorrect number of arguments.");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_NO_RETURN_VALUE) {
+			System.out.print("non-existing return value was expected.");
 		}
 		else {
 			System.out.print("unknwon error occured. Error message: " + pnErrorMessage);
