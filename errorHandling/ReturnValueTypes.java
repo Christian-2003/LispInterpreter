@@ -118,4 +118,10 @@ public class ReturnValueTypes {
 	 * Funktion erwartet wird, welche nicht vorhanden ist.
 	 */
 	public static int ERROR_NO_RETURN_VALUE = 17;
+	
+	/**
+	 * Bei diesem Wert handelt es sich nicht um einen Fehler: Dieser Wert indiziert, dass eine Funktion
+	 * beendet werden soll.
+	 */
+	public static int INFO_FUNCTION_RETURN = 18;
 }

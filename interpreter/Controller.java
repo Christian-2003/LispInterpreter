@@ -203,12 +203,30 @@ public class Controller {
 				Token variableNameObj = new Token(null, null); //Speichert den Token des Variablennamens.
 				variableNameObj = plTokensObj.poll();
 				Token variableValueObj = new Token(null, null); //Speichert den neuen Wert der Variablen.
-				variableValueObj = plTokensObj.peek();
+				variableValueObj = plTokensObj.poll();
 				Atom newAtomObj;
 				if (variableValueObj.getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
 					//Es handelt sich um eine Subrechnung:
+					LinkedList<Token> lCalculationTokensObj = new LinkedList<Token>();
+					lCalculationTokensObj.add(variableValueObj);
+					int nBracketsOpened = 1;
+					int nBracketsClosed = 0;
+					while (!plTokensObj.isEmpty()) {
+						Token currentTokenObj = plTokensObj.poll();
+						if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
+							nBracketsClosed++;
+						}
+						else if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+							nBracketsOpened++;
+						}
+						lCalculationTokensObj.add(currentTokenObj);
+						if (nBracketsOpened == nBracketsClosed) {
+							//Tokens vollstaendig herausgefunden:
+							break;
+						}
+					}
 					ReturnValue<String> calculationReturn = new ReturnValue<String>(); //Speichert den Rueckgabewert der Rechnung.
-					calculationReturn = calculate(plTokensObj);
+					calculationReturn = calculate(lCalculationTokensObj);
 					if (calculationReturn.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
 						//Es ist ein Fehler aufgetreten:
 						return new ReturnValue<Object>(null, calculationReturn.getExecutionInformation());
@@ -218,6 +236,41 @@ public class Controller {
 				else if (variableValueObj.getType().equals(TokenTypes.TOKEN_STRING) || variableValueObj.getType().equals(TokenTypes.TOKEN_NUMBER) || variableValueObj.getType().equals(TokenTypes.TOKEN_BOOLEAN)) {
 					//Es handelt sich um einen String oder eine Nummer oder einen Wahrheitswert:
 					newAtomObj = new Atom(variableNameObj.getValue(), variableValueObj.getValue(), variableValueObj.getType());
+				}
+				else if (variableValueObj.getType().equals(TokenTypes.TOKEN_IDENTIFIER)) {
+					//------------------------------------------------------------------------------
+					//Es handelt sich um einen Bezeichner (einer Variablen oder Funktion):
+					if (plTokensObj.peek().getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+						//Beim naechsten Token handelt es sich um eine geoeffnete Klammer (FUNKTIONSAUFRUF):
+						LinkedList<Token> lFunctionTokensObj = new LinkedList<Token>();
+						lFunctionTokensObj.add(variableValueObj);
+						while (!plTokensObj.isEmpty()) {
+							Token currentTokenObj = new Token(plTokensObj.peek().getValue(), plTokensObj.poll().getType());
+							lFunctionTokensObj.add(currentTokenObj);
+							if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
+								//Parameter herausgefunden:
+								break;
+							}
+						}
+						ReturnValue<Token> functionReturnObj = new ReturnValue<Token>();
+						functionReturnObj = executeFunction(lFunctionTokensObj);
+						if (functionReturnObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+							//Es ist ein Fehler aufgetreten:
+							return new ReturnValue<Object>(null, functionReturnObj.getExecutionInformation());
+						}
+						newAtomObj = new Atom(variableNameObj.getValue(), functionReturnObj.getReturnValue().getValue(), functionReturnObj.getReturnValue().getType());
+					}
+					else {
+						//Es muss sich um eine Variable handeln:
+						ReturnValue<Atom> atomSearchQueryObj = new ReturnValue<Atom>();
+						atomSearchQueryObj = interpreterObj.searchAtom(variableValueObj.getValue());
+						if (atomSearchQueryObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+							//Es ist ein Fehler aufgeteten:
+							return new ReturnValue<Object>(null, atomSearchQueryObj.getExecutionInformation());
+						}
+						newAtomObj = new Atom(variableNameObj.getValue(), atomSearchQueryObj.getReturnValue().getValue(), atomSearchQueryObj.getReturnValue().getType());
+					}
+					//------------------------------------------------------------------------------
 				}
 				else {
 					//Es ist ein nicht angebrachter Token vorhanden -> SYNTAX FEHLER:
@@ -240,14 +293,37 @@ public class Controller {
 				printTokenObj = plTokensObj.poll();
 				String sPrint = ""; //Speichert den Inhalt, welcher in der Konsole ausgegeben werden soll.
 				if (printTokenObj.getType().equals(TokenTypes.TOKEN_IDENTIFIER)) {
-					//Es handelt sich um einen Variablennamen:
-					ReturnValue<Atom> atomObj = new ReturnValue<Atom>();
-					atomObj = interpreterObj.searchAtom(printTokenObj.getValue());
-					if (atomObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
-						//Es ist ein Fehler aufgetreten:
-						return new ReturnValue<Object>(null, atomObj.getExecutionInformation());
+					//Es handelt sich um einen Bezeichner (einer Variablen oder Funktion):
+					if (plTokensObj.peek().getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+						//Beim naechsten Token handelt es sich um eine geoeffnete Klammer (FUNKTIONSAUFRUF):
+						LinkedList<Token> lFunctionTokensObj = new LinkedList<Token>();
+						lFunctionTokensObj.add(printTokenObj);
+						while (!plTokensObj.isEmpty()) {
+							Token currentTokenObj = new Token(plTokensObj.peek().getValue(), plTokensObj.poll().getType());
+							lFunctionTokensObj.add(currentTokenObj);
+							if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
+								//Parameter herausgefunden:
+								break;
+							}
+						}
+						ReturnValue<Token> functionReturnObj = new ReturnValue<Token>();
+						functionReturnObj = executeFunction(lFunctionTokensObj);
+						if (functionReturnObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+							//Es ist ein Fehler aufgetreten:
+							return new ReturnValue<Object>(null, functionReturnObj.getExecutionInformation());
+						}
+						sPrint = functionReturnObj.getReturnValue().getValue();
 					}
-					sPrint = atomObj.getReturnValue().getValue();
+					else {
+						//Es muss sich um eine Variable handeln:
+						ReturnValue<Atom> atomSearchQueryObj = new ReturnValue<Atom>();
+						atomSearchQueryObj = interpreterObj.searchAtom(printTokenObj.getValue());
+						if (atomSearchQueryObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+							//Es ist ein Fehler aufgeteten:
+							return new ReturnValue<Object>(null, atomSearchQueryObj.getExecutionInformation());
+						}
+						sPrint = atomSearchQueryObj.getReturnValue().getValue();
+					}
 				}
 				else if (printTokenObj.getType().equals(TokenTypes.TOKEN_STRING)) {
 					//Es handelt sich um einen String:
@@ -300,14 +376,37 @@ public class Controller {
 				printTokenObj = plTokensObj.poll();
 				String sPrint = ""; //Speichert den Inhalt, welcher in der Konsole ausgegeben werden soll.
 				if (printTokenObj.getType().equals(TokenTypes.TOKEN_IDENTIFIER)) {
-					//Es handelt sich um einen Variablennamen:
-					ReturnValue<Atom> atomObj = new ReturnValue<Atom>();
-					atomObj = interpreterObj.searchAtom(printTokenObj.getValue());
-					if (atomObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
-						//Es ist ein Fehler aufgetreten:
-						return new ReturnValue<Object>(null, atomObj.getExecutionInformation());
+					//Es handelt sich um einen Bezeichner (einer Variablen oder Funktion):
+					if (plTokensObj.peek().getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+						//Beim naechsten Token handelt es sich um eine geoeffnete Klammer (FUNKTIONSAUFRUF):
+						LinkedList<Token> lFunctionTokensObj = new LinkedList<Token>();
+						lFunctionTokensObj.add(printTokenObj);
+						while (!plTokensObj.isEmpty()) {
+							Token currentTokenObj = new Token(plTokensObj.peek().getValue(), plTokensObj.poll().getType());
+							lFunctionTokensObj.add(currentTokenObj);
+							if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
+								//Parameter herausgefunden:
+								break;
+							}
+						}
+						ReturnValue<Token> functionReturnObj = new ReturnValue<Token>();
+						functionReturnObj = executeFunction(lFunctionTokensObj);
+						if (functionReturnObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+							//Es ist ein Fehler aufgetreten:
+							return new ReturnValue<Object>(null, functionReturnObj.getExecutionInformation());
+						}
+						sPrint = functionReturnObj.getReturnValue().getValue();
 					}
-					sPrint = atomObj.getReturnValue().getValue();
+					else {
+						//Es muss sich um eine Variable handeln:
+						ReturnValue<Atom> atomSearchQueryObj = new ReturnValue<Atom>();
+						atomSearchQueryObj = interpreterObj.searchAtom(printTokenObj.getValue());
+						if (atomSearchQueryObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+							//Es ist ein Fehler aufgeteten:
+							return new ReturnValue<Object>(null, atomSearchQueryObj.getExecutionInformation());
+						}
+						sPrint = atomSearchQueryObj.getReturnValue().getValue();
+					}
 				}
 				else if (printTokenObj.getType().equals(TokenTypes.TOKEN_STRING)) {
 					//Es handelt sich um einen String:
@@ -573,11 +672,14 @@ public class Controller {
 					}
 					returnValueObj = new Token(calculateReturnObj.getReturnValue(), TokenTypes.TOKEN_NUMBER);
 					functionReturnValueObj = returnValueObj;
-					return new ReturnValue<Object>(null, ReturnValueTypes.SUCCESS);
+					return new ReturnValue<Object>(null, ReturnValueTypes.INFO_FUNCTION_RETURN);
 				}
+				
 				else {
 					//Unbekannter Token
-					return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_UNKNOWN_TOKEN);
+					returnValueObj = new Token("0.00", TokenTypes.TOKEN_NUMBER);
+					functionReturnValueObj = returnValueObj;
+					return new ReturnValue<Object>(null, ReturnValueTypes.INFO_FUNCTION_RETURN);
 				}
 			}
 			
@@ -589,7 +691,6 @@ public class Controller {
 			//Ueberpruefen, ob noch weitere Tokens in der Liste vorhanden sind:
 			if (plTokensObj.peek() != null && !plTokensObj.peek().getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
 				//Es kommen noch weitere Tokens vor, bei welchen es sich nicht um geschlossene Klammern handelt (SYNTAXFEHLER):
-				//System.out.println("DEBUG = " + plTokensObj.peek().getValue());
 				return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_SYNTAX);
 			}
 		}
@@ -735,8 +836,14 @@ public class Controller {
 			ReturnValue<Object> processReturnObj = new ReturnValue<Object>();
 			processReturnObj = process(currentFunctionInUse.getExpression(i));
 			if (processReturnObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
-				//Es ist ein Fehler aufgetreten:
-				return new ReturnValue<Token>(null, processReturnObj.getExecutionInformation());
+				if (processReturnObj.getExecutionInformation() == ReturnValueTypes.INFO_FUNCTION_RETURN) {
+					//Die Funktion soll beendet werden:
+					break;
+				}
+				else {
+					//Es ist ein Fehler aufgetreten:
+					return new ReturnValue<Token>(null, processReturnObj.getExecutionInformation());
+				}
 			}
 		}
 		
@@ -744,7 +851,9 @@ public class Controller {
 		interpreterObj.changeFunctionAtoms(lOldFunctionAtomsObj);
 		
 		//Funktion wurde erfolgreich ausgefuehrt:
-		return new ReturnValue<Token>(null, ReturnValueTypes.SUCCESS);
+		Token newReturnTokenObj = new Token(functionReturnValueObj.getValue(), functionReturnValueObj.getType());
+		functionReturnValueObj = new Token("0.00", TokenTypes.TOKEN_NUMBER);
+		return new ReturnValue<Token>(newReturnTokenObj, ReturnValueTypes.SUCCESS);
 	}
 	
 	
