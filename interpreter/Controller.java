@@ -159,6 +159,7 @@ public class Controller {
 		}
 		if (nOpenBrackets != nCloseBrackets) {
 			//Es wurden nicht gleich viele Klammern geoeffnet und geschlossen:
+			//An dieser Stelle wird der Syntaxfehler erzeugt, welcher eine erfolgreiche Rekursion verhindert! WARUM? I DO NOT KNOW :( <-----------------------------------------
 			return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_SYNTAX);
 		}
 		
@@ -238,7 +239,6 @@ public class Controller {
 					newAtomObj = new Atom(variableNameObj.getValue(), variableValueObj.getValue(), variableValueObj.getType());
 				}
 				else if (variableValueObj.getType().equals(TokenTypes.TOKEN_IDENTIFIER)) {
-					//------------------------------------------------------------------------------
 					//Es handelt sich um einen Bezeichner (einer Variablen oder Funktion):
 					if (plTokensObj.peek().getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
 						//Beim naechsten Token handelt es sich um eine geoeffnete Klammer (FUNKTIONSAUFRUF):
@@ -270,7 +270,6 @@ public class Controller {
 						}
 						newAtomObj = new Atom(variableNameObj.getValue(), atomSearchQueryObj.getReturnValue().getValue(), atomSearchQueryObj.getReturnValue().getType());
 					}
-					//------------------------------------------------------------------------------
 				}
 				else {
 					//Es ist ein nicht angebrachter Token vorhanden -> SYNTAX FEHLER:
@@ -830,11 +829,12 @@ public class Controller {
 			lNewFunctionAtomsObj.add(new Atom(lFunctionParametersObj.get(i).getName(), lParametersObj.get(i).getValue(), lParametersObj.get(i).getType()));
 		}
 		lOldFunctionAtomsObj.addAll(interpreterObj.changeFunctionAtoms(lNewFunctionAtomsObj));
-		
 		//Ausdruecke der Funktion ausfuehren:
 		for (int i = 0; i < currentFunctionInUse.getExpressionAmount(); i++) {
+			LinkedList<Token> currentExpressionObj = new LinkedList<Token>();
+			currentExpressionObj.addAll(currentFunctionInUse.getExpression(i));
 			ReturnValue<Object> processReturnObj = new ReturnValue<Object>();
-			processReturnObj = process(currentFunctionInUse.getExpression(i));
+			processReturnObj = process(currentExpressionObj);
 			if (processReturnObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
 				if (processReturnObj.getExecutionInformation() == ReturnValueTypes.INFO_FUNCTION_RETURN) {
 					//Die Funktion soll beendet werden:
@@ -842,6 +842,7 @@ public class Controller {
 				}
 				else {
 					//Es ist ein Fehler aufgetreten:
+					//An dieser Stelle wird der Fehler zurueckgegeben, der eine erfolgreiche Rekursion verhindert! TODO: Fehler beheben! <------------------------------------------------
 					return new ReturnValue<Token>(null, processReturnObj.getExecutionInformation());
 				}
 			}
