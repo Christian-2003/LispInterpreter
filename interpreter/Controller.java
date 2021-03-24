@@ -898,6 +898,52 @@ public class Controller {
 			}
 		}
 		
+		//Rueckgabewerte von Funktionsaufrufen einfuegen:
+		nBracketsOpened = 0;
+		nBracketsClosed = 0;
+		for (int i = 0; i < lTokensObj.size(); i++) {
+			Token currentTokenObj = new Token(lTokensObj.get(i).getValue(), lTokensObj.get(i).getType());
+			if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
+				nBracketsClosed++;
+			}
+			if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+				nBracketsOpened++;
+			}
+			if (currentTokenObj.getType().equals(TokenTypes.TOKEN_IDENTIFIER)) {
+				//Es handelt sich um den Bezeichner einer Variablen oder Funktion:
+				if (i + 2 <= lTokensObj.size() && lTokensObj.get(i + 1).getType().equals(TokenTypes.TOKEN_BRACKET_OPENED) && !lTokensObj.get(i + 2).getType().equals(TokenTypes.TOKEN_OPERATOR)) {
+					//Es handelt sich bei dem Bezeichner um eine Funktion:
+					LinkedList<Token> lFunctionTokensObj = new LinkedList<Token>(); //Speichert die Tokens der Funktion.
+					lFunctionTokensObj.add(lTokensObj.remove(i)); //Namen hinzufuegen
+					lFunctionTokensObj.add(lTokensObj.remove(i)); //Klammer der Parameter hinzufuegen:
+					int nFunctionBracketsClosed = 0;
+					int nFunctionBracketsOpened = 1;
+					//Tokens des Funktionsaufrufes herausfinden:
+					while (!lTokensObj.isEmpty()) {
+						Token currentFunctionTokenObj = new Token(lTokensObj.get(i).getValue(), lTokensObj.remove(i).getType());
+						if (currentFunctionTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
+							nFunctionBracketsClosed++;
+						}
+						if (currentFunctionTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+							nFunctionBracketsOpened++;
+						}
+						lFunctionTokensObj.add(currentFunctionTokenObj);
+						if (nFunctionBracketsOpened == nFunctionBracketsClosed) {
+							break;
+						}
+					}
+					//Funktion ausfuehren:
+					ReturnValue<Token> functionExecutionQueryObj = new ReturnValue<Token>();
+					functionExecutionQueryObj = executeFunction(lFunctionTokensObj);
+					if (functionExecutionQueryObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+						//Es ist ein Fehler aufgetreten:
+						return new ReturnValue<String>(null, functionExecutionQueryObj.getExecutionInformation());
+					}
+					lTokensObj.add(i, functionExecutionQueryObj.getReturnValue());
+				}
+			}
+		}
+		
 		//Rechnung durchfuehren:
 		ReturnValue<BinaryTree<Token>> tAbstractSyntaxTree = new ReturnValue<BinaryTree<Token>>(); //Speichert den abstrakten Syntaxbaum.
 		tAbstractSyntaxTree = parserObj.parse(lTokensObj);
