@@ -58,5 +58,5 @@ public class TokenTypes {
 	/**
 	 * Speichert den Token-Typ fuer den "."-Operator.
 	 */
-	static public String TOKEN_OPEATOR_DOT = "operator_dot";
+	static public String TOKEN_OPERATOR_DOT = "operator_dot";
 }

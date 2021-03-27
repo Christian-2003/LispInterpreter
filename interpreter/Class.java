@@ -18,27 +18,33 @@ public class Class {
 	/**
 	 * Speichert den Bezeichner der Klasse.
 	 */
-	private String sName;
+	protected String sName;
 	
 	/**
 	 * Speichert eine Liste an privaten Attributen der Klasse.
 	 */
-	private LinkedList<Atom> lPrivateAttributesObj;
+	protected LinkedList<Atom> lPrivateAttributesObj;
 	
 	/**
 	 * Speichert eine Liste an privaten Funktionen der Klasse.
 	 */
-	private LinkedList<Function> lPrivateFunctionsObj;
+	protected LinkedList<Function> lPrivateFunctionsObj;
 	
 	/**
 	 * Speichert eine Liste an oeffentlichen Attributen.
 	 */
-	private LinkedList<Atom> lPublicAttributesObj;
+	protected LinkedList<Atom> lPublicAttributesObj;
 	
 	/**
 	 * Speichert eine Liste an oeffentlichen Funktionen.
 	 */
-	private LinkedList<Function> lPublicFunctionsObj;
+	protected LinkedList<Function> lPublicFunctionsObj;
+	
+	/**
+	 * Speichert die Tokens der Klasse.
+	 * => Wird benoetigt wenn eine Instanz dieser Klasse in Lisp erzeugt werden soll.
+	 */
+	private LinkedList<Token> lTokensObj;
 	
 	
 	
@@ -52,6 +58,7 @@ public class Class {
 		lPrivateFunctionsObj = new LinkedList<Function>();
 		lPublicAttributesObj = new LinkedList<Atom>();
 		lPublicFunctionsObj = new LinkedList<Function>();
+		lTokensObj = new LinkedList<Token>(plTokensObj);
 		
 		//Den Bezeichner der Klasse identifizieren:
 		sName = plTokensObj.poll().getValue();
@@ -257,5 +264,15 @@ public class Class {
 			}
 		}
 		return new ReturnValue<Function>(null, ReturnValueTypes.ERROR_UNKNOWN_IDENTIFIER);
+	}
+	
+	/**
+	 * Diese Methode gibt eine Liste der Tokens der Klasse zurueck. Dies wird benoetigt, wenn eine Instanz dieser
+	 * Lisp-Klasse erzeugt werden soll.
+	 * 
+	 * @return	Liste der Tokens der Klasse.
+	 */
+	public LinkedList<Token> getClassTokens() {
+		return lTokensObj;
 	}
 }

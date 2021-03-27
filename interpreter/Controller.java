@@ -59,7 +59,7 @@ public class Controller {
 	/**
 	 * Dieses Attribut speichert alle Instanzen von Klassen.
 	 */
-	private LinkedList<Class> lClassInstancesObj;
+	private LinkedList<ClassInstance> lClassInstancesObj;
 	
 	
 	
@@ -77,6 +77,8 @@ public class Controller {
 		lsSourceCode = new LinkedList<String>();
 		lFunctionsObj = new LinkedList<Function>();
 		functionReturnValueObj = new Token("0.00", TokenTypes.TOKEN_NUMBER);
+		lClassesObj = new LinkedList<Class>();
+		lClassInstancesObj = new LinkedList<ClassInstance>();
 		
 		ReturnValue<LinkedList<String>> outputFileScannerObj = new ReturnValue<LinkedList<String>>();
 		outputFileScannerObj = FileScanner.readFile(psFileName);
@@ -710,35 +712,100 @@ public class Controller {
 			}
 		}
 		else if (firstTokenObj.getType().equals(TokenTypes.TOKEN_IDENTIFIER)) {
-			//Der erste Token ist ein Bezeichner -> Aufruf einer Funktion:
+			//Der erste Token ist ein Bezeichner -> Aufruf einer Funktion, oder Deklaration eines Objektes einer Klasse:
 			
-			//Funktions (inkl. Parameter) herausfinden:
-			LinkedList<Token> lFunctionObj = new LinkedList<Token>();
-			lFunctionObj.add(firstTokenObj);
-			int nBracketsOpened = 0;
-			int nBracketsClosed = 0;
-			while (!plTokensObj.isEmpty()) {
-				Token currentTokenObj = plTokensObj.poll();
-				if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
-					nBracketsClosed++;
+			if (plTokensObj.peek().getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+				//Es handelt sich um eine Funktion:
+				
+				//Funktions (inkl. Parameter) herausfinden:
+				LinkedList<Token> lFunctionObj = new LinkedList<Token>();
+				lFunctionObj.add(firstTokenObj);
+				int nBracketsOpened = 0;
+				int nBracketsClosed = 0;
+				while (!plTokensObj.isEmpty()) {
+					Token currentTokenObj = plTokensObj.poll();
+					if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
+						nBracketsClosed++;
+					}
+					else if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+						nBracketsOpened++;
+					}
+					lFunctionObj.add(currentTokenObj);
+					if ((nBracketsOpened != 0 && nBracketsClosed != 0) && (nBracketsOpened == nBracketsClosed)) {
+						//Funktionsaufruf herausgefiltert:
+						break;
+					}
 				}
-				else if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
-					nBracketsOpened++;
-				}
-				lFunctionObj.add(currentTokenObj);
-				if ((nBracketsOpened != 0 && nBracketsClosed != 0) && (nBracketsOpened == nBracketsClosed)) {
-					//Funktionsaufruf herausgefiltert:
-					break;
+				
+				//Funktion aufrufen:
+				ReturnValue<Token> functionReturnObj = new ReturnValue<Token>();
+				functionReturnObj = executeFunction(lFunctionObj);
+				if (functionReturnObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+					//Es ist ein Fehler aufgetreten:
+					return new ReturnValue<Object>(null, functionReturnObj.getExecutionInformation());
 				}
 			}
 			
-			//Funktion aufrufen:
-			ReturnValue<Token> functionReturnObj = new ReturnValue<Token>();
-			functionReturnObj = executeFunction(lFunctionObj);
-			if (functionReturnObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
-				//Es ist ein Fehler aufgetreten:
-				return new ReturnValue<Object>(null, functionReturnObj.getExecutionInformation());
+			else {
+				//Es handelt sich um die instanziierung eines neuen Objektes.
+				
+				//Herausfinden, ob Klasse existiert:
+				String sClassName = firstTokenObj.getValue(); //Speichert den Bezeichner der Klasse, dessen Objekt instanziiert werden soll.
+				Class classTypeObj;
+				boolean bClassAvailable = false;
+				for (int i = 0; i < lClassesObj.size(); i++) {
+					if (lClassesObj.get(i).getName().equals(sClassName)) {
+						//Klasse existiert:
+						bClassAvailable = true;
+						classTypeObj = new Class(lClassesObj.get(i).getClassTokens());
+						break;
+					}
+				}
+				
+				if (!bClassAvailable) {
+					//Klasse existiert nicht:
+					return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_UNKNOWN_CLASS);
+				}
+				else {
+					//Obejkt "muss" instanziiert werden, da der JAVA-Compiler sonst einen Fehler ausgibt, wenn das Objekt der Lisp-Klasse
+					//instanziiert wird. Eigentlich, sollte es dazu aber nicht kommen, da das Objekt classTypeObj instanziiert wird, wenn
+					//der Klassentyp gefunden wird...
+					//Machste nix nh... \(*_*)/
+					classTypeObj = new Class();
+				}
+				
+				//Herausfinden, ob Instanzbezeichner verfuegbar ist:
+				String sInstanceName = plTokensObj.poll().getValue(); //Speichert den Instanznamen des Objektes.
+				ReturnValue<Atom> atomSearchQueryObj = new ReturnValue<Atom>();
+				atomSearchQueryObj = interpreterObj.searchAtom(sInstanceName);
+				if (atomSearchQueryObj.getExecutionInformation() == ReturnValueTypes.SUCCESS) {
+					//Bezeichner existiert bereits als Variablenbezeichner:
+					return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_INSTANCE_NAME_DOES_EXIST);
+				}
+				for (int i = 0; i < lFunctionsObj.size(); i++) {
+					if (lFunctionsObj.get(i).getName().equals(sInstanceName)) {
+						//Bezeichner existiert als Funktionsname:
+						return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_INSTANCE_NAME_DOES_EXIST);
+					}
+				}
+				for (int i = 0; i < lClassesObj.size(); i++) {
+					if (lClassesObj.get(i).getName().equals(sInstanceName)) {
+						//Bezeichner existiert als Klassename:
+						return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_INSTANCE_NAME_CANNOT_BE_CLASS_NAME);
+					}
+				}
+				for (int i = 0; i < lClassInstancesObj.size(); i++) {
+					if (lClassInstancesObj.get(i).getName().equals(sInstanceName)) {
+						//Bezeichner existiert bereits als Instanzname:
+						return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_INSTANCE_NAME_DOES_EXIST);
+					}
+				}
+				
+				//Instanzname kann vergeben werden:
+				lClassInstancesObj.add(new ClassInstance(classTypeObj));
+				System.out.println("[DEBUG]: New instance of \"" + sClassName + "\" named \"" + sInstanceName + "\" created.");
 			}
+			
 		}
 		else {
 			//Der erste Token ist kein Schluesselwort und kein Bezeichner -> SYNTAX FEHLER:

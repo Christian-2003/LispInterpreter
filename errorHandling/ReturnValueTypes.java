@@ -124,4 +124,20 @@ public class ReturnValueTypes {
 	 * beendet werden soll.
 	 */
 	public static int INFO_FUNCTION_RETURN = 18;
+	
+	/**
+	 * Speichert eine Fehlermeldung fuer einen bereits vorhandenen Instanznamen.
+	 */
+	public static int ERROR_INSTANCE_NAME_DOES_EXIST = 19;
+	
+	/**
+	 * Speichert die Fehlermeldung fuer einen Fehler, bei welchem der Instanzname identisch einem Klassennamen ist.
+	 */
+	public static int ERROR_INSTANCE_NAME_CANNOT_BE_CLASS_NAME = 20;
+	
+	/**
+	 * Speichert die Fehlermeldung fuer einen Fehler, bei welchem eine Instanz einer unbekannten Klasse erstellt
+	 * werden soll.
+	 */
+	public static int ERROR_UNKNOWN_CLASS = 21;
 }
