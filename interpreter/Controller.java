@@ -51,6 +51,16 @@ public class Controller {
 	 */
 	private Token functionReturnValueObj;
 	
+	/**
+	 * Dieses Attribut speichert alle Klassentypen (NICHT DIE INSTANZEN!)
+	 */
+	private LinkedList<Class> lClassesObj;
+	
+	/**
+	 * Dieses Attribut speichert alle Instanzen von Klassen.
+	 */
+	private LinkedList<Class> lClassInstancesObj;
+	
 	
 	
 	/**
@@ -99,13 +109,19 @@ public class Controller {
 				return;
 			}
 			tokenObj = lTokensObj.poll();
-			if (!tokenObj.getValue().equals(KeywordTypes.KEYWORD_DEFINE)) {
-				//Erstes Schluesselwort ist nicht "defun": Dyntaxfehler
+			if (tokenObj.getValue().equals(KeywordTypes.KEYWORD_DEFINE)) {
+				//Neue Funktion wird definiert:
+				lFunctionsObj.add(new Function(lTokensObj));
+			}
+			else if (tokenObj.getValue().equals(KeywordTypes.KEYWORD_CLASS)) {
+				//Neue Klasse wird definiert:
+				lClassesObj.add(new Class(lTokensObj));
+			}
+			else {
+				//Erstes Schluesselwort ist nicht "defun" oder "class": Dyntaxfehler
 				printErrorMessage("error> ", ReturnValueTypes.ERROR_SYNTAX, "");
 				return;
 			}
-			Function currentFunctionObj = new Function(lTokensObj);
-			lFunctionsObj.add(currentFunctionObj);
 		}
 		
 		//Herausfinden, mit welcher Funktion gestartet werden soll.

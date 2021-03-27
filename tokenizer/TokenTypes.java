@@ -54,4 +54,9 @@ public class TokenTypes {
 	 * Speichert den Token-Typ fuer boolesche Operatoren.
 	 */
 	static public String TOKEN_OPERATOR_BOOLEAN = "operator_boolean";
+	
+	/**
+	 * Speichert den Token-Typ fuer den "."-Operator.
+	 */
+	static public String TOKEN_OPEATOR_DOT = "operator_dot";
 }

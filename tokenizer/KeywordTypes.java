@@ -12,6 +12,11 @@ public class KeywordTypes {
 	// --- SCHLUESSELWOERTER --------------------------------------------------------------------------
 	
 	/**
+	 * Speichert das Schluesselwort zum definieren einer neuen Klasse.
+	 */
+	public static String KEYWORD_CLASS = "class";
+	
+	/**
 	 * Speichert das Schluesselwort fuer eine Rueckgabe einer Funktion.
 	 */
 	public static String KEYWORD_RETURN = "return";
@@ -75,4 +80,13 @@ public class KeywordTypes {
 	 * Speichert den Wahrheitswert "false".
 	 */
 	public static String BOOLEAN_F = "nil";
+	
+	
+	
+	// --- OPERATOREN --------------------------------------------------------------------------
+	
+	/**
+	 * Speichert den Punkt-Operator.
+	 */
+	public static String OPERATOR_DOT = ".";
 }
