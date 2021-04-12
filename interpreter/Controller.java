@@ -555,7 +555,15 @@ public class Controller {
 					}
 				}
 				ReturnValue<Object> ifReturn = new ReturnValue<Object>(); //Speichert den Rueckgabewert der if-Verzweigung.
-				ifReturn = ifStatement(lConditionObj, lExpressionObj);
+				
+				//Zum Vorbeugen eines Stackoverflowerrors:
+				try {
+					ifReturn = ifStatement(lConditionObj, lExpressionObj);
+				}
+				catch (StackOverflowError exception) {
+					return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_STACK_OVERFLOW);
+				}
+				
 				if (ifReturn.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
 					//Es ist ein Fehler aufgetreten:
 					return new ReturnValue<Object>(null, ifReturn.getExecutionInformation());
@@ -767,11 +775,11 @@ public class Controller {
 					return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_UNKNOWN_CLASS);
 				}
 				else {
-					//Obejkt "muss" instanziiert werden, da der JAVA-Compiler sonst einen Fehler ausgibt, wenn das Objekt der Lisp-Klasse
+					//Objekt "muss" instanziiert werden, da der JAVA-Compiler sonst einen Fehler ausgibt, wenn das Objekt der Lisp-Klasse
 					//instanziiert wird. Eigentlich, sollte es dazu aber nicht kommen, da das Objekt classTypeObj instanziiert wird, wenn
 					//der Klassentyp gefunden wird...
 					//Machste nix nh... \(*_*)/
-					classTypeObj = new Class();
+					classTypeObj = new Class(lClassesObj.peek().getClassTokens());
 				}
 				
 				//Herausfinden, ob Instanzbezeichner verfuegbar ist:
@@ -1263,6 +1271,18 @@ public class Controller {
 		}
 		else if (pnErrorMessage == ReturnValueTypes.ERROR_NO_RETURN_VALUE) {
 			System.out.print("non-existing return value was expected.");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_INSTANCE_NAME_DOES_EXIST) {
+			System.out.print("the name of an instance is already used.");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_INSTANCE_NAME_CANNOT_BE_CLASS_NAME) {
+			System.out.print("instance name cannot be class name.");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_UNKNOWN_CLASS) {
+			System.out.print("unknown class type.");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_STACK_OVERFLOW) {
+			System.out.print("stackOverflowError.");
 		}
 		else {
 			System.out.print("unknwon error occured. Error message: " + pnErrorMessage);

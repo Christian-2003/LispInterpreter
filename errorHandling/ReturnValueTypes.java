@@ -140,4 +140,9 @@ public class ReturnValueTypes {
 	 * werden soll.
 	 */
 	public static int ERROR_UNKNOWN_CLASS = 21;
+	
+	/**
+	 * Speichert die Fehlermeldung fuer einen Stackoverflowerror.
+	 */
+	public static int ERROR_STACK_OVERFLOW = 22;
 }

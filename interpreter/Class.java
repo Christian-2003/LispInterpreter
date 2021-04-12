@@ -58,7 +58,8 @@ public class Class {
 		lPrivateFunctionsObj = new LinkedList<Function>();
 		lPublicAttributesObj = new LinkedList<Atom>();
 		lPublicFunctionsObj = new LinkedList<Function>();
-		lTokensObj = new LinkedList<Token>(plTokensObj);
+		lTokensObj = new LinkedList<Token>();
+		lTokensObj.addAll(plTokensObj);
 		
 		//Den Bezeichner der Klasse identifizieren:
 		sName = plTokensObj.poll().getValue();
