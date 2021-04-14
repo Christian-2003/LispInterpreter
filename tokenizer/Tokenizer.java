@@ -254,7 +254,7 @@ public class Tokenizer {
 			char chCurrentCharacter = sSourceCode.charAt(i); //Speichert das aktuelle Zeichen im String.
 			sString += chCurrentCharacter;
 			
-			if (chCurrentCharacter == '\"') {
+			if (chCurrentCharacter == '\"' && sSourceCode.charAt(i - 1) != '\\') {
 				//Ende des Strings:
 				Token currentTokenObj = new Token(sString.substring(1, sString.length() - 1), TokenTypes.TOKEN_STRING); //Neuen Token erstellen.
 				lTokens.add(currentTokenObj);

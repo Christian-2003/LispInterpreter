@@ -140,7 +140,17 @@ public class Controller {
 				interpreterObj.changeFunctionAtoms(lFunctionsObj.get(i).getParameters());
 				for (int j = 0; j < lFunctionsObj.get(i).getExpressionAmount(); j++) {
 					//Ausdruecke verarbeiten:
-					ReturnValue<Object> processReturnObj = process(lFunctionsObj.get(i).getExpression(j));
+					ReturnValue<Object> processReturnObj; //Speichert den Rueckgabewert der process()-Funktion.
+					
+					//Zum Abfangen eines StackoverflowErrors.
+					try {
+						processReturnObj = process(lFunctionsObj.get(i).getExpression(j));
+					}
+					catch (StackOverflowError exceptionObj) {
+						printErrorMessage("error> ", ReturnValueTypes.ERROR_STACK_OVERFLOW, "");
+						return;
+					}
+					
 					if (processReturnObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
 						//Es kam zu einem Fehler:
 						printErrorMessage("error> ", processReturnObj.getExecutionInformation(), "");
@@ -385,7 +395,12 @@ public class Controller {
 					//Es handelt sich um einen unangebrachten Token -> SYNTAX FEHLER:
 					return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_SYNTAX);
 				}
-				System.out.print(sPrint);
+				
+				//String in der Konsole ausgeben:
+				ReturnValue<Object> printReturnObj = printString(sPrint, false);
+				if (printReturnObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+					return printReturnObj;
+				}
 			}
 			
 			else if (firstTokenObj.getValue().equals(KeywordTypes.KEYWORD_PRINTLN)) {
@@ -468,7 +483,12 @@ public class Controller {
 					//Es handelt sich um einen unangebrachten Token -> SYNTAX FEHLER:
 					return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_SYNTAX);
 				}
-				System.out.println(sPrint);
+				
+				//String in der Konsole ausgeben:
+				ReturnValue<Object> printReturnObj = printString(sPrint, true);
+				if (printReturnObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+					return printReturnObj;
+				}
 			}
 			
 			else if (firstTokenObj.getValue().equals(KeywordTypes.KEYWORD_SCAN)) {
@@ -1307,5 +1327,72 @@ public class Controller {
 			return false;
 		}
 		return true;
+	}
+	
+	/**
+	 * Diese Methode gibt einen String in der Konsole aus.
+	 * 
+	 * @param psString			String, welcher ausgegeben werden soll.
+	 * @param pbAddLineBreak	Ob ein Zeilenumbruch am Ende angefuehrt werden soll.
+	 */
+	private ReturnValue<Object> printString(String psString, boolean pbAddLineBreak) {
+		//String zeichenweise durchlaufen:
+		for (int i = 0; i < psString.length(); i++) {
+			char chCurrentCharacter = psString.charAt(i);
+			if (chCurrentCharacter == '\\') {
+				//Aktuelles Zeichen leitet ein Steuerzeichen ein:
+				if (i >= psString.length() - 1) {
+					//String ist nicht lang genug, um ein Steuerzeichen zu enthalten:
+					return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_STRING_TOO_SHORT);
+				}
+				i++;
+				char chControlCharacter = psString.charAt(i); //Speichert das Steuerzeichen.
+				
+				switch (chControlCharacter) {
+				case 'n':
+					System.out.print('\n');
+					break;
+					
+				case 't':
+					System.out.print('\t');
+					break;
+					
+				case '\"':
+					System.out.print('\"');
+					break;
+					
+				case '\'':
+					System.out.print('\'');
+					break;
+					
+				case 'b':
+					System.out.print('\b');
+					break;
+					
+				case 'f':
+					System.out.print('\f');
+					break;
+					
+				case 'r':
+					System.out.print('\r');
+					break;
+					
+				default:
+					//Unbekanntes Steuerzeichen:
+					return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_UNKNOWN_CTRL_CHAR);
+				}
+			}
+			
+			else {
+				//Es handelt sich nicht um ein Steuerzeichen:
+				System.out.print(chCurrentCharacter);
+			}
+		}
+		
+		//Zeilenumbruch hinzufuegen, falls dies gewollt ist:
+		if (pbAddLineBreak) {
+			System.out.println();
+		}
+		return new ReturnValue<Object>(null, ReturnValueTypes.SUCCESS);
 	}
 }

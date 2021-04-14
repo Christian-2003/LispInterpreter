@@ -145,4 +145,14 @@ public class ReturnValueTypes {
 	 * Speichert die Fehlermeldung fuer einen Stackoverflowerror.
 	 */
 	public static int ERROR_STACK_OVERFLOW = 22;
+	
+	/**
+	 * Speichert die Fehlermeldung fuer einen String, welcher zu kurz ist um ein Steuerzeichen zu enthalten.
+	 */
+	public static int ERROR_STRING_TOO_SHORT = 23;
+	
+	/**
+	 * Speichert die Fehlermeldung fuer ein unbekanntes Steuerzeichen.
+	 */
+	public static int ERROR_UNKNOWN_CTRL_CHAR = 24;
 }
