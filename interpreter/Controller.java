@@ -853,6 +853,7 @@ public class Controller {
 	 */
 	private ReturnValue<Token> executeFunction(LinkedList<Token> plTokensObj) {
 		//Herausfinden, ob die Funktion existiert:
+		boolean bFunctionIsPreDefined = false; //Gibt an, ob es sich um eine vordefinierte Funktion handelt.
 		boolean bFunctionFound = false;
 		String sFunctionName = plTokensObj.poll().getValue();
 		Function currentFunctionInUse = new Function();
@@ -864,9 +865,32 @@ public class Controller {
 				break;
 			}
 		}
+		
 		if (!bFunctionFound) {
 			//Funktion wurde nicht gefunden:
-			return new ReturnValue<Token>(null, ReturnValueTypes.ERROR_UNKNOWN_IDENTIFIER);
+			
+			//Herausgfinden, ob es sich um eine vordefinierte Funktion handelt:
+			if (sFunctionName.equals(KeywordTypes.FUNCTION_LENGTH)) {
+				bFunctionIsPreDefined = true;
+			}
+			else if (sFunctionName.equals(KeywordTypes.FUNCTION_ISNUMBER)) {
+				bFunctionIsPreDefined = true;
+			}
+			else if (sFunctionName.equals(KeywordTypes.FUNCTION_SIN)) {
+				bFunctionIsPreDefined = true;
+			}
+			else if (sFunctionName.equals(KeywordTypes.FUNCTION_COS)) {
+				bFunctionIsPreDefined = true;
+			}
+			else if (sFunctionName.equals(KeywordTypes.FUNCTION_TAN)) {
+				bFunctionIsPreDefined = true;
+			}
+			else if (sFunctionName.equals(KeywordTypes.FUNCTION_SQRT)) {
+				bFunctionIsPreDefined = true;
+			}
+			else {
+				return new ReturnValue<Token>(null, ReturnValueTypes.ERROR_UNKNOWN_IDENTIFIER);
+			}
 		}
 		
 		//Parameter herausfinden:
@@ -926,6 +950,63 @@ public class Controller {
 			}
 		}
 		
+		//INHALT DIESER IF-VERZWEIGUNG WIRD AUSSCHLIESSLICH AUFGERUFEN, WENN DIE FUNKTION VORDEFINIERT IST:
+		if (bFunctionIsPreDefined) {
+			//Funktionsnamen verarbeiten:
+			if (sFunctionName.equals(KeywordTypes.FUNCTION_LENGTH)) {
+				//Die lenghth()-Funktion:
+				if (lParametersObj.size() == PreDefinedFunctions.LENGTH_PARAMETERS) {
+					return new ReturnValue<Token>(new Token(String.valueOf(PreDefinedFunctions.length(lParametersObj.peek().getValue())), TokenTypes.TOKEN_NUMBER), ReturnValueTypes.SUCCESS);
+				}
+				return new ReturnValue<Token>(null, ReturnValueTypes.ERROR_INCORRECT_PARAMETER_NUMBER);
+			}
+			
+			else if (sFunctionName.equals(KeywordTypes.FUNCTION_ISNUMBER)) {
+				//Die isNumber()-Funktion:
+				if (lParametersObj.size() == PreDefinedFunctions.ISNUMBER_PARAMETERS) {
+					return new ReturnValue<Token>(new Token(PreDefinedFunctions.isNumber(lParametersObj.peek().getValue()), TokenTypes.TOKEN_BOOLEAN), ReturnValueTypes.SUCCESS);
+				}
+				return new ReturnValue<Token>(null, ReturnValueTypes.ERROR_INCORRECT_PARAMETER_NUMBER);
+			}
+			
+			else if (sFunctionName.equals(KeywordTypes.FUNCTION_SIN)) {
+				//Die sin()-Funktion:
+				if (lParametersObj.size() == PreDefinedFunctions.SIN_PARAMETERS) {
+					return new ReturnValue<Token>(new Token(PreDefinedFunctions.sin(lParametersObj.peek().getValue()), TokenTypes.TOKEN_NUMBER), ReturnValueTypes.SUCCESS);
+				}
+				return new ReturnValue<Token>(null, ReturnValueTypes.ERROR_INCORRECT_PARAMETER_NUMBER);
+			}
+			
+			else if (sFunctionName.equals(KeywordTypes.FUNCTION_COS)) {
+				//Die sin()-Funktion:
+				if (lParametersObj.size() == PreDefinedFunctions.COS_PARAMETERS) {
+					return new ReturnValue<Token>(new Token(PreDefinedFunctions.cos(lParametersObj.peek().getValue()), TokenTypes.TOKEN_NUMBER), ReturnValueTypes.SUCCESS);
+				}
+				return new ReturnValue<Token>(null, ReturnValueTypes.ERROR_INCORRECT_PARAMETER_NUMBER);
+			}
+			
+			else if (sFunctionName.equals(KeywordTypes.FUNCTION_TAN)) {
+				//Die sin()-Funktion:
+				if (lParametersObj.size() == PreDefinedFunctions.TAN_PARAMETERS) {
+					return new ReturnValue<Token>(new Token(PreDefinedFunctions.tan(lParametersObj.peek().getValue()), TokenTypes.TOKEN_NUMBER), ReturnValueTypes.SUCCESS);
+				}
+				return new ReturnValue<Token>(null, ReturnValueTypes.ERROR_INCORRECT_PARAMETER_NUMBER);
+			}
+			
+			else if (sFunctionName.equals(KeywordTypes.FUNCTION_SQRT)) {
+				//Die sin()-Funktion:
+				if (lParametersObj.size() == PreDefinedFunctions.SQRT_PARAMETERS) {
+					return new ReturnValue<Token>(new Token(PreDefinedFunctions.sqrt(lParametersObj.peek().getValue()), TokenTypes.TOKEN_NUMBER), ReturnValueTypes.SUCCESS);
+				}
+				return new ReturnValue<Token>(null, ReturnValueTypes.ERROR_INCORRECT_PARAMETER_NUMBER);
+			}
+			
+			else {
+				//Unbekannte Funktion:
+				return new ReturnValue<Token>(null, ReturnValueTypes.ERROR_UNKNOWN_IDENTIFIER);
+			}
+		}
+		
 		//Herausfinden, die Parameter in korrekter Anzahl angegeben wurden:
 		if (currentFunctionInUse.getParameterAmount() != lParametersObj.size()) {
 			//Es wurde eine inkorrekte Anzahl an Parametern angegeben:
@@ -953,7 +1034,6 @@ public class Controller {
 				}
 				else {
 					//Es ist ein Fehler aufgetreten:
-					//An dieser Stelle wird der Fehler zurueckgegeben, der eine erfolgreiche Rekursion verhindert! TODO: Fehler beheben! <------------------------------------------------
 					return new ReturnValue<Token>(null, processReturnObj.getExecutionInformation());
 				}
 			}
@@ -1078,6 +1158,53 @@ public class Controller {
 	 */
 	private ReturnValue<Boolean> condition(LinkedList<Token> plConditionObj) {
 		ReturnValue<BinaryTree<Token>> tAbstractSyntaxTreeObj = new ReturnValue<BinaryTree<Token>>(); //Speichert den abstrakten Syntaxbaum.
+		
+		//Rueckgabewerte von Funktionsaufrufen einfuegen:
+		int nBracketsOpened = 0;
+		int nBracketsClosed = 0;
+		for (int i = 0; i < plConditionObj.size(); i++) {
+			Token currentTokenObj = new Token(plConditionObj.get(i).getValue(), plConditionObj.get(i).getType());
+			if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
+				nBracketsClosed++;
+			}
+			if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+				nBracketsOpened++;
+			}
+			if (currentTokenObj.getType().equals(TokenTypes.TOKEN_IDENTIFIER)) {
+				//Es handelt sich um den Bezeichner einer Variablen oder Funktion:
+				if (i + 2 <= plConditionObj.size() && plConditionObj.get(i + 1).getType().equals(TokenTypes.TOKEN_BRACKET_OPENED) && !plConditionObj.get(i + 2).getType().equals(TokenTypes.TOKEN_OPERATOR)) {
+					//Es handelt sich bei dem Bezeichner um eine Funktion:
+					LinkedList<Token> lFunctionTokensObj = new LinkedList<Token>(); //Speichert die Tokens der Funktion.
+					lFunctionTokensObj.add(plConditionObj.remove(i)); //Namen hinzufuegen
+					lFunctionTokensObj.add(plConditionObj.remove(i)); //Klammer der Parameter hinzufuegen:
+					int nFunctionBracketsClosed = 0;
+					int nFunctionBracketsOpened = 1;
+					//Tokens des Funktionsaufrufes herausfinden:
+					while (!plConditionObj.isEmpty()) {
+						Token currentFunctionTokenObj = new Token(plConditionObj.get(i).getValue(), plConditionObj.remove(i).getType());
+						if (currentFunctionTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
+							nFunctionBracketsClosed++;
+						}
+						if (currentFunctionTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+							nFunctionBracketsOpened++;
+						}
+						lFunctionTokensObj.add(currentFunctionTokenObj);
+						if (nFunctionBracketsOpened == nFunctionBracketsClosed) {
+							break;
+						}
+					}
+					//Funktion ausfuehren:
+					ReturnValue<Token> functionExecutionQueryObj = new ReturnValue<Token>();
+					functionExecutionQueryObj = executeFunction(lFunctionTokensObj);
+					if (functionExecutionQueryObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+						//Es ist ein Fehler aufgetreten:
+						return new ReturnValue<Boolean>(false, functionExecutionQueryObj.getExecutionInformation());
+					}
+					plConditionObj.add(i, functionExecutionQueryObj.getReturnValue());
+				}
+			}
+		}
+		
 		tAbstractSyntaxTreeObj = parserObj.parse(plConditionObj);
 		if (tAbstractSyntaxTreeObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
 			//Es ist ein Fehler aufgetreten:

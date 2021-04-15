@@ -89,4 +89,38 @@ public class KeywordTypes {
 	 * Speichert den Punkt-Operator.
 	 */
 	public static String OPERATOR_DOT = ".";
+	
+	
+	
+	// --- BEZEICHNER VON FUNKTIONEN --------------------------------------------------------------------------
+	
+	/**
+	 * Speichert den Bezeichner der "length()"-Funktion.
+	 */
+	public static String FUNCTION_LENGTH = "length";
+	
+	/**
+	 * Speichert den Bezeichner der "isNumber()"-Funktion.
+	 */
+	public static String FUNCTION_ISNUMBER = "isnumber";
+	
+	/**
+	 * Speichert den Bezeichner der "sin()"-Funktion.
+	 */
+	public static String FUNCTION_SIN = "sin";
+	
+	/**
+	 * Speichert den Bezeichner der "cos()"-Funktion.
+	 */
+	public static String FUNCTION_COS = "cos";
+	
+	/**
+	 * Speichert den Bezeichner der "tan()"-Funktion.
+	 */
+	public static String FUNCTION_TAN = "tan";
+	
+	/**
+	 * Speichert den Bezeichner der "sqrt()"-Funktion.
+	 */
+	public static String FUNCTION_SQRT = "sqrt";
 }

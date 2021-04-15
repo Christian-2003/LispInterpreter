@@ -80,6 +80,14 @@ public class Tokenizer {
 	 * @return				Position, an welcher der Operator endet.
 	 */
 	private int tokenizeOperatorBoolean(int pnPosition) {
+		if (sSourceCode.length() > pnPosition + 1) {
+			if ((sSourceCode.charAt(pnPosition) == '<' || sSourceCode.charAt(pnPosition) == '>') && sSourceCode.charAt(pnPosition + 1) == '=') {
+				//Groesser- bzw. kleiner-als Operator gefunden:
+				String sTokenValue = String.valueOf(sSourceCode.charAt(pnPosition)) + sSourceCode.charAt(pnPosition + 1);
+				lTokens.add(new Token(sTokenValue, TokenTypes.TOKEN_OPERATOR_BOOLEAN));
+				return pnPosition + 1;
+			}
+		}
 		Token currentTokenObj = new Token(String.valueOf(sSourceCode.charAt(pnPosition)), TokenTypes.TOKEN_OPERATOR_BOOLEAN);
 		lTokens.add(currentTokenObj);
 		return pnPosition;
@@ -184,6 +192,12 @@ public class Tokenizer {
 				else if (sIdentifier.equals(KeywordTypes.BOOLEAN_F)) {
 					currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_BOOLEAN);
 				}
+				else if (sIdentifier.equals(">=")) {
+					currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_OPERATOR_BOOLEAN);
+				}
+				else if (sIdentifier.equals("<=")) {
+					currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_OPERATOR_BOOLEAN);
+				}
 				else {
 					//Es handelt sich nicht um ein Schluesselwort:
 					currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_IDENTIFIER);
@@ -230,6 +244,12 @@ public class Tokenizer {
 		}
 		else if (sIdentifier.equals(KeywordTypes.BOOLEAN_F)) {
 			currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_BOOLEAN);
+		}
+		else if (sIdentifier.equals(">=")) {
+			currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_OPERATOR_BOOLEAN);
+		}
+		else if (sIdentifier.equals("<=")) {
+			currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_OPERATOR_BOOLEAN);
 		}
 		else {
 			//Es handelt sich nicht um ein Schluesselwort:

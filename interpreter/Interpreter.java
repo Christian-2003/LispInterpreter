@@ -412,6 +412,36 @@ public class Interpreter {
 				return new ReturnValue<Boolean>(false, ReturnValueTypes.ERROR_SYNTAX);
 			}
 			
+		case ">=":
+			//Ueberpruefen, ob der linke Operand groesser order gleich dem rechten ist:
+			if (leftOperandObj.getType().equals(TokenTypes.TOKEN_NUMBER)) {
+				//Es handelt sich um Zahlen:
+				if (Double.parseDouble(leftOperandObj.getValue()) >= Double.parseDouble(rightOperandObj.getValue())) {
+					//Der linke Operand ist groesser oder gleich dem rechten:
+					return new ReturnValue<Boolean>(true, ReturnValueTypes.SUCCESS);
+				}
+				return new ReturnValue<Boolean>(false, ReturnValueTypes.SUCCESS);
+			}
+			else {
+				//Opernaden koennen ueber diesen Operator nicht verglichen werden:
+				return new ReturnValue<Boolean>(false, ReturnValueTypes.ERROR_SYNTAX);
+			}
+			
+		case "<=":
+			//Ueberpruefen, ob der linke Operand kleiner order gleich dem rechten ist:
+			if (leftOperandObj.getType().equals(TokenTypes.TOKEN_NUMBER)) {
+				//Es handelt sich um Zahlen:
+				if (Double.parseDouble(leftOperandObj.getValue()) <= Double.parseDouble(rightOperandObj.getValue())) {
+					//Der linke Operand ist kleiner oder gleich dem rechten:
+					return new ReturnValue<Boolean>(true, ReturnValueTypes.SUCCESS);
+				}
+				return new ReturnValue<Boolean>(false, ReturnValueTypes.SUCCESS);
+			}
+			else {
+				//Opernaden koennen ueber diesen Operator nicht verglichen werden:
+				return new ReturnValue<Boolean>(false, ReturnValueTypes.ERROR_SYNTAX);
+			}
+			
 		case "!":
 			//Ueberpruefen, ob die Werte nicht identisch sind:
 			if (!leftOperandObj.getValue().equals(rightOperandObj.getValue())) {
