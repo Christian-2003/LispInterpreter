@@ -574,11 +574,37 @@ public class Controller {
 						break;
 					}
 				}
+				//Anweisungen der else-Verzweigung herausfinden:
+				nBracketsClosed = 0;
+				nBracketsOpened = 0;
+				LinkedList<Token> lElseStatementObj = new LinkedList<Token>();
+				if (plTokensObj.peek().getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+					//Es existiert eien else-Verzweigung:
+					nBracketsClosed = 0;
+					nBracketsOpened = 0;
+					while (!plTokensObj.isEmpty()) {
+						Token currentToken = new Token(plTokensObj.peek().getValue(), plTokensObj.poll().getType());
+						if (currentToken.getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
+							//Geschlossene Klammer:
+							nBracketsClosed++;
+						}
+						else if (currentToken.getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+							//Geschlossene Klammer:
+							nBracketsOpened++;
+						}
+						lElseStatementObj.add(currentToken);
+						if (nBracketsClosed == nBracketsOpened) {
+							//Es wurden gleich viele Klammern geoeffnet und geschlossen:
+							break;
+						}
+					}
+					
+				}
 				ReturnValue<Object> ifReturn = new ReturnValue<Object>(); //Speichert den Rueckgabewert der if-Verzweigung.
 				
 				//Zum Vorbeugen eines Stackoverflowerrors:
 				try {
-					ifReturn = ifStatement(lConditionObj, lExpressionObj);
+					ifReturn = ifStatement(lConditionObj, lExpressionObj, lElseStatementObj);
 				}
 				catch (StackOverflowError exception) {
 					return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_STACK_OVERFLOW);
@@ -1239,10 +1265,11 @@ public class Controller {
 	 * Bedingung wahr (T) und nicht falsch (NIL) ist.
 	 * 
 	 * @param plConditionObj	Bedingung der Verzweigung.
-	 * @param plExpressionObj	Anweisungen der Verzweigung.
+	 * @param plIfStatement		Anweisungen der Verzweigung.
+	 * @param plElseStatement	Anweisungen einer optionalen else-Verzweigung.
 	 * @return					Gibt an, ob ein Fehler aufgetreten ist.
 	 */
-	private ReturnValue<Object> ifStatement(LinkedList<Token> plConditionObj, LinkedList<Token> plExpressionObj) {
+	private ReturnValue<Object> ifStatement(LinkedList<Token> plConditionObj, LinkedList<Token> plIfStatement, LinkedList<Token> plElseStatement) {
 		//Ueberpruefen, ob die Bedingung wahr ist:
 		ReturnValue<Boolean> bConditionObj = new ReturnValue<Boolean>();
 		bConditionObj = condition(plConditionObj);
@@ -1252,8 +1279,8 @@ public class Controller {
 		}
 		
 		//Ueberpruefen, ob die Bedingung wahr oder falsch ist:
-		if (!bConditionObj.getReturnValue()) {
-			//Die Bedingung ist falsch:
+		if (!bConditionObj.getReturnValue() && plElseStatement.isEmpty()) {
+			//Die Bedingung ist falsch und es gibt keine else-Verzweigung:
 			return new ReturnValue<Object>(null, ReturnValueTypes.SUCCESS);
 		}
 		
@@ -1262,32 +1289,70 @@ public class Controller {
 		lOldAtomsObj.addAll(interpreterObj.getAllAtoms());
 		
 		//Anweisungen in eine Liste an Listen an Tokens einordnen:
-		plExpressionObj.poll(); //Erste geoeffnete Klammer entfernen.
+		plIfStatement.poll(); //Erste geoeffnete Klammer entfernen.
 		int nBracketsOpened = 0; //Speichert die Anzahl der geoeffneten Klammern.
 		int nBracketsClosed = 0; //Speichert die Anzahl der geschlossenen Klammern.
 		LinkedList<Token> lCurrentExpressionObj = new LinkedList<Token>(); //Speichert den aktuellen Ausdruck.
-		while (!plExpressionObj.isEmpty()) {
-			if (plExpressionObj.peek().getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
-				nBracketsClosed++;
-			}
-			else if (plExpressionObj.peek().getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
-				nBracketsOpened++;
-			}
-			lCurrentExpressionObj.add(plExpressionObj.poll());
-			if (nBracketsClosed == nBracketsOpened) {
-				//Es wurden gleich viele Klammern geoeffnet und geschlossen:
-				
-				//Ausdruck Ausfuehren:
-				ReturnValue<Object> expressionReturn = new ReturnValue<Object>();
-				expressionReturn = process(lCurrentExpressionObj);
-				if (expressionReturn.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
-					//Es kam zu einem Fehler:
-					return new ReturnValue<Object>(null, expressionReturn.getExecutionInformation());
+		
+		if (bConditionObj.getReturnValue()) {
+			//Die Bedingung ist wahr:
+			while (!plIfStatement.isEmpty()) {
+				if (plIfStatement.peek().getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
+					nBracketsClosed++;
 				}
-				
-				lCurrentExpressionObj.clear();
-				nBracketsClosed = 0;
-				nBracketsOpened = 0;
+				else if (plIfStatement.peek().getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+					nBracketsOpened++;
+				}
+				lCurrentExpressionObj.add(plIfStatement.poll());
+				if (nBracketsClosed == nBracketsOpened) {
+					//Es wurden gleich viele Klammern geoeffnet und geschlossen:
+					
+					//Ausdruck Ausfuehren:
+					ReturnValue<Object> expressionReturn = new ReturnValue<Object>();
+					expressionReturn = process(lCurrentExpressionObj);
+					if (expressionReturn.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+						//Es kam zu einem Fehler:
+						return new ReturnValue<Object>(null, expressionReturn.getExecutionInformation());
+					}
+					
+					lCurrentExpressionObj.clear();
+					nBracketsClosed = 0;
+					nBracketsOpened = 0;
+				}
+			}
+		}
+		
+		else {
+			//Die Bedingung ist falsch:
+			plElseStatement.poll(); //Erste geoeffnete Klammer entfernen.
+			while (!plElseStatement.isEmpty()) {
+				if (plElseStatement.peek().getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
+					nBracketsClosed++;
+				}
+				else if (plElseStatement.peek().getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+					nBracketsOpened++;
+				}
+				lCurrentExpressionObj.add(plElseStatement.poll());
+				if (nBracketsClosed == nBracketsOpened) {
+					//Es wurden gleich viele Klammern geoeffnet und geschlossen:
+					
+					for (int i = 0; i < lCurrentExpressionObj.size(); i++) {
+						System.out.print(lCurrentExpressionObj.get(i).getValue());
+					}
+					System.out.println();
+					
+					//Ausdruck Ausfuehren:
+					ReturnValue<Object> expressionReturn = new ReturnValue<Object>();
+					expressionReturn = process(lCurrentExpressionObj);
+					if (expressionReturn.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+						//Es kam zu einem Fehler:
+						return new ReturnValue<Object>(null, expressionReturn.getExecutionInformation());
+					}
+					
+					lCurrentExpressionObj.clear();
+					nBracketsClosed = 0;
+					nBracketsOpened = 0;
+				}
 			}
 		}
 		
