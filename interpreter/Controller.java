@@ -857,7 +857,7 @@ public class Controller {
 				
 				//Instanzname kann vergeben werden:
 				lClassInstancesObj.add(new ClassInstance(classTypeObj));
-				System.out.println("[DEBUG]: New instance of \"" + sClassName + "\" named \"" + sInstanceName + "\" created.");
+				//System.out.println("[DEBUG]: New instance of \"" + sClassName + "\" named \"" + sInstanceName + "\" created.");
 			}
 			
 		}
@@ -1335,11 +1335,6 @@ public class Controller {
 				lCurrentExpressionObj.add(plElseStatement.poll());
 				if (nBracketsClosed == nBracketsOpened) {
 					//Es wurden gleich viele Klammern geoeffnet und geschlossen:
-					
-					for (int i = 0; i < lCurrentExpressionObj.size(); i++) {
-						System.out.print(lCurrentExpressionObj.get(i).getValue());
-					}
-					System.out.println();
 					
 					//Ausdruck Ausfuehren:
 					ReturnValue<Object> expressionReturn = new ReturnValue<Object>();
