@@ -1257,6 +1257,10 @@ public class Controller {
 			return new ReturnValue<Object>(null, ReturnValueTypes.SUCCESS);
 		}
 		
+		//Variablen, welche NICHT in der Kontrollstruktur vorkommen speichern:
+		LinkedList<Atom> lOldAtomsObj = new LinkedList<Atom>();
+		lOldAtomsObj.addAll(interpreterObj.getAllAtoms());
+		
 		//Anweisungen in eine Liste an Listen an Tokens einordnen:
 		plExpressionObj.poll(); //Erste geoeffnete Klammer entfernen.
 		int nBracketsOpened = 0; //Speichert die Anzahl der geoeffneten Klammern.
@@ -1286,6 +1290,21 @@ public class Controller {
 				nBracketsOpened = 0;
 			}
 		}
+		
+		//Atomwerte der alten Variablen ueberschreiben, falls diese geaendert wurden:
+		LinkedList<Atom> lCurrentAtomsObj = new LinkedList<Atom>();
+		lCurrentAtomsObj = interpreterObj.getAllAtoms();
+		for (int i = 0; i < lCurrentAtomsObj.size(); i++) {
+			for (int j = 0; j < lOldAtomsObj.size(); j++) {
+				if (lOldAtomsObj.get(j).getName().equals(lCurrentAtomsObj.get(i).getName())) {
+					//Bezeichner der beiden Variablen stimmen ueberein:
+					Atom nCurrentAtom = new Atom(lCurrentAtomsObj.get(i).getName(), lCurrentAtomsObj.get(i).getValue(), lCurrentAtomsObj.get(i).getType());
+					lOldAtomsObj.remove(j);
+					lOldAtomsObj.add(j, nCurrentAtom);
+				}
+			}
+		}
+		interpreterObj.changeFunctionAtoms(lOldAtomsObj); //Alte variablen wieder hinzufuegen.
 		return new ReturnValue<Object>(null, ReturnValueTypes.SUCCESS);
 	}
 	
@@ -1300,14 +1319,33 @@ public class Controller {
 	 * @return					Gibr an, ob ein Fehler aufgetreten ist.
 	 */
 	private ReturnValue<Object> whileLoop(LinkedList<Token> plConditionObj, LinkedList<Token> plExpressionObj) {
+		//Variablen, welche NICHT in der Kontrollstruktur vorkommen speichern:
+		LinkedList<Atom> lOldAtomsObj = new LinkedList<Atom>();
+		lOldAtomsObj.addAll(interpreterObj.changeFunctionAtoms(interpreterObj.getAllAtoms()));
+		
 		//Die Schleife laeuft immer weiter bis die Methode beendet wird, wenn die Bedingung falsch ist.
 		while (true) {
+			//Atomwerte der alten Variablen ueberschreiben, falls diese geaendert wurden:
+			LinkedList<Atom> lCurrentAtomsObj = new LinkedList<Atom>();
+			lCurrentAtomsObj = interpreterObj.getAllAtoms();
+			for (int i = 0; i < lCurrentAtomsObj.size(); i++) {
+				for (int j = 0; j < lOldAtomsObj.size(); j++) {
+					if (lOldAtomsObj.get(j).getName().equals(lCurrentAtomsObj.get(i).getName())) {
+						//Bezeichner der beiden Variablen stimmen ueberein:
+						Atom nCurrentAtom = new Atom(lCurrentAtomsObj.get(i).getName(), lCurrentAtomsObj.get(i).getValue(), lCurrentAtomsObj.get(i).getType());
+						lOldAtomsObj.remove(j);
+						lOldAtomsObj.add(j, nCurrentAtom);
+					}
+				}
+			}
+			interpreterObj.changeFunctionAtoms(lOldAtomsObj); //Die alten Variablen wiederherstellen.
+			
 			//Ueberpruefen, ob die Bedingung wahr ist:
 			LinkedList<Token> lConditionObj = new LinkedList<Token>();
 			lConditionObj.addAll(plConditionObj);
 			ReturnValue<Boolean> bConditionObj = new ReturnValue<Boolean>();
 			bConditionObj = condition(lConditionObj);
-				if (bConditionObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+			if (bConditionObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
 				//Es ist ein Fehler aufgetreten:
 				return new ReturnValue<Object>(null, bConditionObj.getExecutionInformation());
 			}
@@ -1315,6 +1353,7 @@ public class Controller {
 			//Ueberpruefen, ob die Bedingung wahr oder falsch ist:
 			if (!bConditionObj.getReturnValue()) {
 				//Die Bedingung ist falsch:
+				interpreterObj.changeFunctionAtoms(lOldAtomsObj); //Die alten Variablen wiederherstellen.
 				return new ReturnValue<Object>(null, ReturnValueTypes.SUCCESS);
 			}
 			
@@ -1366,70 +1405,70 @@ public class Controller {
 		
 		//Fehlermeldung ausgeben:
 		if (pnErrorMessage == ReturnValueTypes.SUCCESS) {
-			System.out.print("success");
+			System.out.print("Success");
 		}
 		else if (pnErrorMessage == ReturnValueTypes.ERROR_UNKNOWN) {
-			System.out.print("unknown error");
+			System.out.print("Unknown");
 		}
 		else if (pnErrorMessage == ReturnValueTypes.ERROR_DIVIDE_BY_ZERO) {
-			System.out.print("cannot divide by zero");
+			System.out.print("Cannot divide by zero");
 		}
 		else if (pnErrorMessage == ReturnValueTypes.ERROR_UNEQUAL_DATA) {
-			System.out.print("operands have different type");
+			System.out.print("Operands are of different type");
 		}
 		else if (pnErrorMessage == ReturnValueTypes.ERROR_SYNTAX) {
-			System.out.print("syntax error");
+			System.out.print("Syntax");
 		}
 		else if (pnErrorMessage == ReturnValueTypes.ERROR_UNKNOWN_OPERATOR) {
-			System.out.print("unknown operator");
+			System.out.print("Unknown operator");
 		}
 		else if (pnErrorMessage == ReturnValueTypes.ERROR_UNKNOWN_IDENTIFIER) {
-			System.out.print("unknown identifier");
+			System.out.print("Unknown identifier");
 		}
 		else if (pnErrorMessage == ReturnValueTypes.ERROR_NOT_ENOUGH_OPERANDS) {
-			System.out.print("the operation does not have enough operands");
+			System.out.print("The operation needs more operands");
 		}
 		else if (pnErrorMessage == ReturnValueTypes.ERROR_CANNOT_OFFSET_STRING_TO_NUMBER) {
-			System.out.print("cannot offset String to number");
+			System.out.print("Cannot offset String to number");
 		}
 		else if (pnErrorMessage == ReturnValueTypes.ERROR_UNKNOWN_TOKEN) {
-			System.out.print("unknown token");
+			System.out.print("Encountered unknown token.");
 		}
 		else if (pnErrorMessage == ReturnValueTypes.ERROR_UNKNOWN_KEYWORD) {
-			System.out.print("unknown keyword found");
+			System.out.print("Encountered onknown keyword");
 		}
 		else if (pnErrorMessage == ReturnValueTypes.ERROR_VARIABLE_NAME_DOES_EXIST) {
-			System.out.print("variable name does already exist");
+			System.out.print("Variable name does already exist");
 		}
 		else if (pnErrorMessage == ReturnValueTypes.ERROR_FILE_DOES_NOT_EXIST) {
-			System.out.print("the file does not exist");
+			System.out.print("File does not exist");
 		}
 		else if (pnErrorMessage == ReturnValueTypes.ERROR_FILE_CANNOT_BE_READ) {
-			System.out.print("cannot read file");
+			System.out.print("Cannot read file");
 		}
 		else if (pnErrorMessage == ReturnValueTypes.ERROR_NO_MAIN_FUNCTION) {
-			System.out.print("main function is missing");
+			System.out.print("Main function is missing");
 		}
 		else if (pnErrorMessage == ReturnValueTypes.ERROR_MAIN_FUNCTION_HAS_PARAMETER) {
-			System.out.print("main function has too many parameters.");
+			System.out.print("Main function has too many parameters");
 		}
 		else if (pnErrorMessage == ReturnValueTypes.ERROR_INCORRECT_PARAMETER_NUMBER) {
-			System.out.print("the function call has an incorrect number of arguments.");
+			System.out.print("Function call has an incorrect number of arguments");
 		}
 		else if (pnErrorMessage == ReturnValueTypes.ERROR_NO_RETURN_VALUE) {
-			System.out.print("non-existing return value was expected.");
+			System.out.print("Non-existing return value was expected");
 		}
 		else if (pnErrorMessage == ReturnValueTypes.ERROR_INSTANCE_NAME_DOES_EXIST) {
-			System.out.print("the name of an instance is already used.");
+			System.out.print("The name of an instance is already used");
 		}
 		else if (pnErrorMessage == ReturnValueTypes.ERROR_INSTANCE_NAME_CANNOT_BE_CLASS_NAME) {
-			System.out.print("instance name cannot be class name.");
+			System.out.print("Instance name cannot be class name");
 		}
 		else if (pnErrorMessage == ReturnValueTypes.ERROR_UNKNOWN_CLASS) {
-			System.out.print("unknown class type.");
+			System.out.print("Unknown class type");
 		}
 		else if (pnErrorMessage == ReturnValueTypes.ERROR_STACK_OVERFLOW) {
-			System.out.print("stackOverflowError.");
+			System.out.print("StackOverflow");
 		}
 		else {
 			System.out.print("unknwon error occured. Error message: " + pnErrorMessage);

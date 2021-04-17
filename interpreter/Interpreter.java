@@ -77,6 +77,17 @@ public class Interpreter {
 	
 	
 	/**
+	 * Gibt eine Liste, mit allen Atomen zurueck.
+	 * 
+	 * @return	Liste an Atomen.
+	 */
+	public LinkedList<Atom> getAllAtoms() {
+		return lAtomsObj;
+	}
+	
+	
+	
+	/**
 	 * Diese Methode ersetzt ein Atom in der Liste an Atomen.
 	 * 
 	 * @param pAtomObj	Atom, durch welches ersetzt werden soll.
