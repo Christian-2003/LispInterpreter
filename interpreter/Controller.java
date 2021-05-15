@@ -210,7 +210,89 @@ public class Controller {
 				if (variableName.getType().equals(TokenTypes.TOKEN_IDENTIFIER)) {
 					//Beim Variablennamen handelt es sich um einen Bezeichner:
 					boolean bVariableIsAddedSuccessfully = false; //Speichert, ob der Variablenname hinzugefuegt wurde.
-					Atom atom = new Atom(variableName.getValue(), "0.0", TokenTypes.TOKEN_NUMBER); //Neues Atom hat standartmaessig den Wert 0.0.
+					Atom atom;
+					if (!plTokensObj.peek().getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
+						//Die Variable soll ebenfalls instanziiert werden:
+						
+						Token variableValueObj = new Token(null, null); //Speichert den Wert der Variablen.
+						variableValueObj = plTokensObj.poll();
+						//-----------------------------------------------------------------------------
+						if (variableValueObj.getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+							//Es handelt sich um eine Subrechnung:
+							LinkedList<Token> lCalculationTokensObj = new LinkedList<Token>();
+							lCalculationTokensObj.add(variableValueObj);
+							int nBracketsOpened = 1;
+							int nBracketsClosed = 0;
+							while (!plTokensObj.isEmpty()) {
+								Token currentTokenObj = plTokensObj.poll();
+								if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
+									nBracketsClosed++;
+								}
+								else if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+									nBracketsOpened++;
+								}
+								lCalculationTokensObj.add(currentTokenObj);
+								if (nBracketsOpened == nBracketsClosed) {
+									//Tokens vollstaendig herausgefunden:
+									break;
+								}
+							}
+							ReturnValue<String> calculationReturn = new ReturnValue<String>(); //Speichert den Rueckgabewert der Rechnung.
+							calculationReturn = calculate(lCalculationTokensObj);
+							if (calculationReturn.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+								//Es ist ein Fehler aufgetreten:
+								return new ReturnValue<Object>(null, calculationReturn.getExecutionInformation());
+							}
+							atom = new Atom(variableName.getValue(), calculationReturn.getReturnValue(), TokenTypes.TOKEN_NUMBER);
+						}
+						else if (variableValueObj.getType().equals(TokenTypes.TOKEN_STRING) || variableValueObj.getType().equals(TokenTypes.TOKEN_NUMBER) || variableValueObj.getType().equals(TokenTypes.TOKEN_BOOLEAN)) {
+							//Es handelt sich um einen String oder eine Nummer oder einen Wahrheitswert:
+							atom = new Atom(variableName.getValue(), variableValueObj.getValue(), variableValueObj.getType());
+						}
+						else if (variableValueObj.getType().equals(TokenTypes.TOKEN_IDENTIFIER)) {
+							//Es handelt sich um einen Bezeichner (einer Variablen oder Funktion):
+							if (plTokensObj.peek().getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+								//Beim naechsten Token handelt es sich um eine geoeffnete Klammer (FUNKTIONSAUFRUF):
+								LinkedList<Token> lFunctionTokensObj = new LinkedList<Token>();
+								lFunctionTokensObj.add(variableValueObj);
+								while (!plTokensObj.isEmpty()) {
+									Token currentTokenObj = new Token(plTokensObj.peek().getValue(), plTokensObj.poll().getType());
+									lFunctionTokensObj.add(currentTokenObj);
+									if (currentTokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_CLOSED)) {
+										//Parameter herausgefunden:
+										break;
+									}
+								}
+								ReturnValue<Token> functionReturnObj = new ReturnValue<Token>();
+								functionReturnObj = executeFunction(lFunctionTokensObj);
+								if (functionReturnObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+									//Es ist ein Fehler aufgetreten:
+									return new ReturnValue<Object>(null, functionReturnObj.getExecutionInformation());
+								}
+								atom = new Atom(variableName.getValue(), functionReturnObj.getReturnValue().getValue(), functionReturnObj.getReturnValue().getType());
+							}
+							else {
+								//Es muss sich um eine Variable handeln:
+								ReturnValue<Atom> atomSearchQueryObj = new ReturnValue<Atom>();
+								atomSearchQueryObj = interpreterObj.searchAtom(variableValueObj.getValue());
+								if (atomSearchQueryObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+									//Es ist ein Fehler aufgeteten:
+									return new ReturnValue<Object>(null, atomSearchQueryObj.getExecutionInformation());
+								}
+								atom = new Atom(variableName.getValue(), atomSearchQueryObj.getReturnValue().getValue(), atomSearchQueryObj.getReturnValue().getType());
+							}
+						}
+						else {
+							//Es ist ein nicht angebrachter Token vorhanden -> SYNTAX FEHLER:
+							return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_SYNTAX);
+						}
+						//-----------------------------------------------------------------------------
+						
+					}
+					else {
+						//Die Variable soll nicht initialisiert werden:
+						atom = new Atom(variableName.getValue(), "0.0", TokenTypes.TOKEN_NUMBER); //Neues Atom hat standartmaessig den Wert 0.0.
+					}
 					bVariableIsAddedSuccessfully = interpreterObj.addAtom(atom);
 					if (bVariableIsAddedSuccessfully) {
 						//Atom wurde erfolgreich hinzugefuegt:
