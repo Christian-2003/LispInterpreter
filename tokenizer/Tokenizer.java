@@ -192,12 +192,6 @@ public class Tokenizer {
 				else if (sIdentifier.equals(KeywordTypes.BOOLEAN_F)) {
 					currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_BOOLEAN);
 				}
-				else if (sIdentifier.equals(">=")) {
-					currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_OPERATOR_BOOLEAN);
-				}
-				else if (sIdentifier.equals("<=")) {
-					currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_OPERATOR_BOOLEAN);
-				}
 				else {
 					//Es handelt sich nicht um ein Schluesselwort:
 					currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_IDENTIFIER);
@@ -244,12 +238,6 @@ public class Tokenizer {
 		}
 		else if (sIdentifier.equals(KeywordTypes.BOOLEAN_F)) {
 			currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_BOOLEAN);
-		}
-		else if (sIdentifier.equals(">=")) {
-			currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_OPERATOR_BOOLEAN);
-		}
-		else if (sIdentifier.equals("<=")) {
-			currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_OPERATOR_BOOLEAN);
 		}
 		else {
 			//Es handelt sich nicht um ein Schluesselwort:

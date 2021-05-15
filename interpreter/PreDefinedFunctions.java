@@ -155,4 +155,97 @@ public class PreDefinedFunctions {
 	 * Speichert die Anzahl der Parameter der "isNumber()"-Funktion.
 	 */
 	public static int SQRT_PARAMETERS = 1;
+	
+	
+	
+	
+	/**
+	 * Gibt das Zeichen, welches sich an der Position pnPos im String psString befindet zurueck.
+	 * 
+	 * @param psString	String, in welchem das Zeichen gesucht wird.
+	 * @param psPos		Position, dessen Zeichen zurueckgegeben werden soll.
+	 * @return			Zeichen an der Position im String.
+	 */
+	public static String charAt(String psString, String psPos) {
+		try {
+			//Da alle Zahlen in diesem Lisp den Typen "double" aufweisen, hier jedoch ein index (also ein Integer) notwendig ist, muss die Eingabe zuerst
+			//ueber "Double.parseDouble()" in einen double Wert umgewandelt werden, und anschliessend ueber einen Typecast in einen Integer umgewandelt
+			//werden. Sonst kommt es zu einer "NumberFormatException", obwohl eine korrekte Zahl angegeben wurde.
+			double nPosAsDouble = Double.parseDouble(psPos);
+			int nPos = (int)nPosAsDouble;
+			
+			if (nPos < 0) {
+				//Position ist zu klein. Es wird (falls vorhanden) das erste Zeichen des Strings zurueckgegeben:
+				if (psString.length() >= 1) {
+					return String.valueOf(psString.charAt(0));
+				}
+				else {
+					return " ";
+				}
+			}
+			if (psString.length() > nPos) {
+				//Zeichen an der Position wird zurueckgegeben:
+				return String.valueOf(psString.charAt(nPos));
+			}
+			else {
+				//Position ist zu gross. Es wird (falls vorhanden) das letzte Zeichen des Strings zurueckgegeben:
+				if (psString.length() >= 1) {
+					return String.valueOf(psString.charAt(psString.length() - 1));
+				}
+				else {
+					return " ";
+				}
+			}
+		}
+		catch (NumberFormatException exceptionObj) {
+			//Es ist keine gueltige Zahl als Position uebergeben worden. Es wird (falls vorhanden) das erste Zeichen des Strings zurueckgegben:
+			if (psString.length() >= 1) {
+				return String.valueOf(psString.charAt(0));
+			}
+			else {
+				return " ";
+			}
+		}
+	}
+	
+	/**
+	 * Speichert die Anzahl der "charAt()"-Funktion.
+	 */
+	public static int CHARAT_PARAMETERS = 2;
+	
+	
+	
+	
+	
+	/**
+	 * Gibt den Substring des psString zwischen psBegin und psEnd zurueck.
+	 * 
+	 * @param psString	String, welcher zerlegt werden soll.
+	 * @param psBegin	Index des ersten Zeichens des Substrings.
+	 * @param psEnd		Index des letzten Zeichens des Substrings.
+	 * @return			Substring zwischen psBegin und psEnd.
+	 */
+	public static String substring(String psString, String psBegin, String psEnd) {
+		try {
+			double nBeginAsDouble = Double.parseDouble(psBegin);
+			double nEndAsDouble = Double.parseDouble(psEnd);
+			int nBegin = (int)nBeginAsDouble;
+			int nEnd = (int)nEndAsDouble;
+			
+			if (nBegin < 0 || nEnd > psString.length() - 1) {
+				return psString;
+			}
+			else {
+				return psString.substring(nBegin, nEnd);
+			}
+		}
+		catch (NumberFormatException exceptionObj) {
+			return psString;
+		}
+	}
+	
+	/**
+	 * Speichert die Anzahl an Parametern der "substring()"-Funktion.
+	 */
+	public static int SUBSTRING_PARAMETERS = 3;
 }

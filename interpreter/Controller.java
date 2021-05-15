@@ -914,6 +914,12 @@ public class Controller {
 			else if (sFunctionName.equals(KeywordTypes.FUNCTION_SQRT)) {
 				bFunctionIsPreDefined = true;
 			}
+			else if (sFunctionName.equals(KeywordTypes.FUNCTION_CHARAT)) {
+				bFunctionIsPreDefined = true;
+			}
+			else if (sFunctionName.equals(KeywordTypes.FUNCTION_SUBSTRING)) {
+				bFunctionIsPreDefined = true;
+			}
 			else {
 				return new ReturnValue<Token>(null, ReturnValueTypes.ERROR_UNKNOWN_IDENTIFIER);
 			}
@@ -1023,6 +1029,22 @@ public class Controller {
 				//Die sin()-Funktion:
 				if (lParametersObj.size() == PreDefinedFunctions.SQRT_PARAMETERS) {
 					return new ReturnValue<Token>(new Token(PreDefinedFunctions.sqrt(lParametersObj.peek().getValue()), TokenTypes.TOKEN_NUMBER), ReturnValueTypes.SUCCESS);
+				}
+				return new ReturnValue<Token>(null, ReturnValueTypes.ERROR_INCORRECT_PARAMETER_NUMBER);
+			}
+			
+			else if (sFunctionName.equals(KeywordTypes.FUNCTION_CHARAT)) {
+				//Die charAt()-Funktion:
+				if (lParametersObj.size() == PreDefinedFunctions.CHARAT_PARAMETERS) {
+					return new ReturnValue<Token>(new Token(PreDefinedFunctions.charAt(lParametersObj.poll().getValue(), lParametersObj.poll().getValue()), TokenTypes.TOKEN_STRING), ReturnValueTypes.SUCCESS);
+				}
+				return new ReturnValue<Token>(null, ReturnValueTypes.ERROR_INCORRECT_PARAMETER_NUMBER);
+			}
+			
+			else if (sFunctionName.equals(KeywordTypes.FUNCTION_SUBSTRING)) {
+				//Die charAt()-Funktion:
+				if (lParametersObj.size() == PreDefinedFunctions.SUBSTRING_PARAMETERS) {
+					return new ReturnValue<Token>(new Token(PreDefinedFunctions.substring(lParametersObj.poll().getValue(), lParametersObj.poll().getValue(), lParametersObj.poll().getValue()), TokenTypes.TOKEN_STRING), ReturnValueTypes.SUCCESS);
 				}
 				return new ReturnValue<Token>(null, ReturnValueTypes.ERROR_INCORRECT_PARAMETER_NUMBER);
 			}

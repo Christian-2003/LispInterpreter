@@ -123,4 +123,14 @@ public class KeywordTypes {
 	 * Speichert den Bezeichner der "sqrt()"-Funktion.
 	 */
 	public static String FUNCTION_SQRT = "sqrt";
+	
+	/**
+	 * Speichert den Bezeichner der "charAt()"-Funktion.
+	 */
+	public static String FUNCTION_CHARAT = "charat";
+	
+	/**
+	 * Speichert den Bezeichner der "substring()"-Funktion.
+	 */
+	public static String FUNCTION_SUBSTRING = "substr";
 }
