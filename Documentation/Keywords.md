@@ -19,48 +19,48 @@ Currently, there are multiple keywords available with this Lisp dialect.
 <br/>
 
 ### Keywords regarding variables:
-- [`var`](https://github.com/ChosenChris/LispInterpreter/tree/main/Documentation/Keywords.md#var)
+- [`var`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#var)
 <br/>
 This keyword is used to declare a new variable.
 
-- [`setf`](https://github.com/ChosenChris/LispInterpreter/tree/main/Documentation/Keywords.md#setf)
+- [`setf`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#setf)
 <br/>
 This keyword is used to change the value of any variable.
 
 <br/>
 
 ### Keywords for in- and output:
-- [`princ`](https://github.com/ChosenChris/LispInterpreter/tree/main/Documentation/Keywords.md#princ-princln)
+- [`princ`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#princ-princln)
 <br/>
 This keyword is used to output anything in the terminal.
 
-- [`princln`](https://github.com/ChosenChris/LispInterpreter/tree/main/Documentation/Keywords.md#princ-princln)
+- [`princln`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#princ-princln)
 <br/>
 This keyword is used to output anything in the terminal and adds a line break afterwards.
 
-- [`scan`](https://github.com/ChosenChris/LispInterpreter/tree/main/Documentation/Keywords.md#scan)
+- [`scan`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#scan)
 <br/>
 This keyword is used to scan an input from the user.
 
 <br/>
 
 ### Keywords for control structures:
-- [`if`](https://github.com/ChosenChris/LispInterpreter/tree/main/Documentation/Keywords.md#if)
+- [`if`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#if)
 <br/>
 This keyword indicates an if-statement.
 
-- [`while`](https://github.com/ChosenChris/LispInterpreter/tree/main/Documentation/Keywords.md#while)
+- [`while`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#while)
 <br/>
 This keyword indicates a while-loop.
 
 <br/>
 
 ### Keywords for functions:
-- [`defun`](https://github.com/ChosenChris/LispInterpreter/tree/main/Documentation/Keywords.md#defun)
+- [`defun`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#defun)
 <br/>
 This keyword is used to define a new function.
 
-- [`return`](https://github.com/ChosenChris/LispInterpreter/tree/main/Documentation/Keywords.md#return)
+- [`return`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#return)
 <br/>
 This keyword is used to exit a function and return a value.
 
