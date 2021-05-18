@@ -6,7 +6,7 @@ A boolean comparison **compares always two values** and returns a boolean as a r
 <br/>
 
 # Booleans:
-As in (most)) other programming languages, there are two booleans: _true_ and _false_.
+As in (most) other programming languages, there are two booleans: _true_ and _false_.
 <br/>
 The boolean _true_ is in this Lisp Interpreter represented through the value `T`, while the boolean _false_ is represented through the value `NIL`.
 
