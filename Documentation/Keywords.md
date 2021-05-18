@@ -19,48 +19,48 @@ Currently, there are multiple keywords available with this Lisp dialect.
 <br/>
 
 ### Keywords regarding variables:
-- [`var`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#var)
+[`var`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#var)
 <br/>
 This keyword is used to declare a new variable.
 
-- [`setf`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#setf)
+[`setf`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#setf)
 <br/>
 This keyword is used to change the value of any variable.
 
 <br/>
 
 ### Keywords for in- and output:
-- [`princ`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#princ-princln)
+[`princ`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#princ-princln)
 <br/>
 This keyword is used to output anything in the terminal.
 
-- [`princln`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#princ-princln)
+[`princln`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#princ-princln)
 <br/>
 This keyword is used to output anything in the terminal and adds a line break afterwards.
 
-- [`scan`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#scan)
+[`scan`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#scan)
 <br/>
 This keyword is used to scan an input from the user.
 
 <br/>
 
 ### Keywords for control structures:
-- [`if`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#if)
+[`if`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#if)
 <br/>
 This keyword indicates an if-statement.
 
-- [`while`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#while)
+[`while`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#while)
 <br/>
 This keyword indicates a while-loop.
 
 <br/>
 
 ### Keywords for functions:
-- [`defun`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#defun)
+[`defun`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#defun)
 <br/>
 This keyword is used to define a new function.
 
-- [`return`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#return)
+[`return`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#return)
 <br/>
 This keyword is used to exit a function and return a value.
 
@@ -139,7 +139,7 @@ Represents the new value, to which the variable should be changed to.
 ### Remarks:
 The keywords `princ` and `princln` are used to **output anything to the terminal**. `princ` simply prints any element into the console, while `princln` does the same and adds a line break afterwards.
 <br/>
-**IMPORTANT:** `princ` and `princln` are capable of processing control characters, such as `\n`, `\t`, etc. A list with available control characters can be found [here](https://github.com/ChosenChris/LispInterpreter/tree/main/Documentation/Control-characters.md).
+**IMPORTANT:** `princ` and `princln` are capable of processing escape sequences, such as `\n`, `\t`, etc. A list with available escape sequences can be found [here](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Control%20characters.md).
 
 <br/>
 
