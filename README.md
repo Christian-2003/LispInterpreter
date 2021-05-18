@@ -7,4 +7,10 @@ This program can interpret source code, which is written in a simplified and ada
 
 <br/>
 
-Further information about the Lisp syntax can be found [here](https://github.com/ChosenChris/LispInterpreter/tree/main/Documentation).
+# Information about the Lisp dialect that the Interpreter can evaluate:
+- [Keywords](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Keywords.md "Visit the \"Documentation\" folder of this Repository")
+- [Arithmetic operations](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Atithmetic%20operations.md "Visit the \"Documentation\" folder of this Repository")
+- [Boolean operations](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Boolean%20operations.md "Visit the \"Documentation\" folder of this Repository")
+- [Functions](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Functions.md "Visit the \"Documentation\" folder of this Repository")
+- [Predefined functions](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Predefined%20functions.md "Visit the \"Documentation\" folder of this Repository")
+- [Escape sequences](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Control%20characters.md "Visit the \"Documentation\" folder of this Repository")
