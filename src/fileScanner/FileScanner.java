@@ -52,7 +52,7 @@ public class FileScanner {
 			sFileContent = Files.readString(filePathObj);
 		}
 		catch (IOException e){
-			e.printStackTrace();
+			return new ReturnValue<LinkedList<String>>(null, ReturnValueTypes.ERROR_FILE_CANNOT_BE_READ);
 		}
 		
 		//Inhalt der Datei in einzelne Lisp-Ausdruecke unterteilen:
@@ -61,9 +61,8 @@ public class FileScanner {
 		int nBracketsClosed = 0; //Speichert die Anzahl an geschlossenen Klammern.
 		int nBracketsOpened = 0; //Speichert die Anzahl an geoeffneten Klammern.
 		
-		//Zeilenumbrueche und Tabulatoren aus dem Quellcode entfernen, da diese den Tokenizer verwirren:
+		//Tabulatoren aus dem Quellcode entfernen, da diese den Tokenizer verwirren:
 		sFileContent = sFileContent.replaceAll("\t", "");
-		sFileContent = sFileContent.replaceAll("\n", "");
 		sFileContent = sFileContent.replaceAll("\r", "");
 		
 		//Quellcode zeichenweise durchlaufen um diesen in Ausdruecke zu unterteilen:
@@ -79,11 +78,19 @@ public class FileScanner {
 				nBracketsClosed++;
 			}
 			
+			if (chCurrentCharacter == ';') {
+				//Es wurde ein Kommentar gefunden -> Kommentar wird entfernt:
+				while (!sFileContent.isEmpty() && sFileContent.charAt(0) != '\n') {
+					sFileContent = sFileContent.substring(1);
+				}
+				continue;
+			}
+			
 			sCurrentExpression += chCurrentCharacter; //Aktuelles Zeichen dem aktuellen Ausdruck anfuegen.
 			
 			if ((nBracketsOpened != 0 && nBracketsClosed != 0) && (nBracketsOpened == nBracketsClosed)) {
 				//Es wurden gleich viele Klammern geoeffnet und geschlossen:
-				lsSourceCode.add(sCurrentExpression);
+				lsSourceCode.add(sCurrentExpression.replaceAll("\n", "")); //Zeilenumbruecke entfernen.
 				sCurrentExpression = "";
 				nBracketsClosed = 0;
 				nBracketsOpened = 0;

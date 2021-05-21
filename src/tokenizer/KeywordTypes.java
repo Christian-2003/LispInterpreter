@@ -61,9 +61,14 @@ public class KeywordTypes {
 	 */
 	public static String KEYWORD_VAR = "var";
 	
+	/**
+	 * Speichert das Schluesselwort zum importieren ander Quellcode-Dateien.
+	 */
+	public static String KEYWORD_IMPORT = "import";
 	
 	
-	// --- BEZEICHNER DER MEIN-FUNKTION --------------------------------------------------------------------------
+	
+	// --- BEZEICHNER DER MAIN-FUNKTION --------------------------------------------------------------------------
 	
 	public static String FUNCTION_MAIN = "main";
 	
@@ -89,6 +94,8 @@ public class KeywordTypes {
 	 * Speichert den Punkt-Operator.
 	 */
 	public static String OPERATOR_DOT = ".";
+	
+	public static String OPERATOR_MODULO = "%";
 	
 	
 	

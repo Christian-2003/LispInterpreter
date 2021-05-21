@@ -61,6 +61,11 @@ public class Controller {
 	 */
 	private LinkedList<ClassInstance> lClassInstancesObj;
 	
+	/**
+	 * Speichert den Dateinamen, aus welchem der Quellcode geladen werden soll:
+	 */
+	private String sFileName;
+	
 	
 	
 	/**
@@ -79,51 +84,22 @@ public class Controller {
 		functionReturnValueObj = new Token("0.00", TokenTypes.TOKEN_NUMBER);
 		lClassesObj = new LinkedList<Class>();
 		lClassInstancesObj = new LinkedList<ClassInstance>();
-		
-		ReturnValue<LinkedList<String>> outputFileScannerObj = new ReturnValue<LinkedList<String>>();
-		outputFileScannerObj = FileScanner.readFile(psFileName);
-		if (outputFileScannerObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
-			//Es kam zu einem Fehler:
-			printErrorMessage("error> ", outputFileScannerObj.getExecutionInformation(), "");
-			System.exit(0); //Programm beenden.
-		}
-		lsSourceCode.addAll(outputFileScannerObj.getReturnValue());
+		sFileName = psFileName;
 	}
 	
 	
 	
 	/**
 	 * Diese Methode startet die Rekursion, bei welcher der Quellcode schrittweise ausgefuehrt wird.
+	 * 
+	 * @return	Fehlermeldung
 	 */
-	public void startController() {
-		//Quellcode Ausdruck fuer Ausdruck durchlaufen:
-		for (int i = 0; i < lsSourceCode.size(); i++) {
-			ReturnValue<Object> returnObj = new ReturnValue<Object>(); //Rueckgabewert des Tokenizers.
-			
-			LinkedList<Token> lTokensObj = new LinkedList<Token>(); //Speichert den aktuellen Ausdruck im Quellcode als Tokens.
-			lTokensObj.addAll(tokenizerObj.tokenize(lsSourceCode.get(i)));
-			
-			//Jeden Ausdruck in eine Funktion umwandeln:
-			Token tokenObj = lTokensObj.poll();
-			if (!tokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
-				//Der erste Token ist keien geoeffnete Klammer: Syntaxfehler
-				printErrorMessage("error> ", ReturnValueTypes.ERROR_SYNTAX, "");
-				return;
-			}
-			tokenObj = lTokensObj.poll();
-			if (tokenObj.getValue().equals(KeywordTypes.KEYWORD_DEFINE)) {
-				//Neue Funktion wird definiert:
-				lFunctionsObj.add(new Function(lTokensObj));
-			}
-			else if (tokenObj.getValue().equals(KeywordTypes.KEYWORD_CLASS)) {
-				//Neue Klasse wird definiert:
-				lClassesObj.add(new Class(lTokensObj));
-			}
-			else {
-				//Erstes Schluesselwort ist nicht "defun" oder "class": Dyntaxfehler
-				printErrorMessage("error> ", ReturnValueTypes.ERROR_SYNTAX, "");
-				return;
-			}
+	public int startController() {
+		//Den aktuellen Quellcode zerteilen:
+		int nReturnValue = extractSourceCode(sFileName);
+		if (nReturnValue != ReturnValueTypes.SUCCESS) {
+			//Es ist ein Fehler aufgetreten:
+			return nReturnValue;
 		}
 		
 		//Herausfinden, mit welcher Funktion gestartet werden soll.
@@ -134,8 +110,7 @@ public class Controller {
 				lParameterObj = lFunctionsObj.get(i).getParameters();
 				if (lParameterObj.size() != 0) {
 					//Es sind Parameter vorhanden: Syntaxfehler (main-Funktion erhaelt keine Parameter).
-					printErrorMessage("error> ", ReturnValueTypes.ERROR_MAIN_FUNCTION_HAS_PARAMETER, " no parameters are allowed.");
-					return;
+					return ReturnValueTypes.ERROR_MAIN_FUNCTION_HAS_PARAMETER;
 				}
 				interpreterObj.changeFunctionAtoms(lFunctionsObj.get(i).getParameters());
 				for (int j = 0; j < lFunctionsObj.get(i).getExpressionAmount(); j++) {
@@ -147,22 +122,101 @@ public class Controller {
 						processReturnObj = process(lFunctionsObj.get(i).getExpression(j));
 					}
 					catch (StackOverflowError exceptionObj) {
-						printErrorMessage("error> ", ReturnValueTypes.ERROR_STACK_OVERFLOW, "");
-						return;
+						//Es kam zu einem Stackoverflowerror:
+						return ReturnValueTypes.ERROR_STACK_OVERFLOW;
 					}
 					
 					if (processReturnObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
 						//Es kam zu einem Fehler:
-						printErrorMessage("error> ", processReturnObj.getExecutionInformation(), "");
-						return;
+						return processReturnObj.getExecutionInformation();
 					}
 				}
-				return; //Beenden, nachdem alle Ausdruecke verarbeitet wurden.
+				return ReturnValueTypes.SUCCESS; //Beenden, nachdem alle Ausdruecke verarbeitet wurden.
 			}
 		}
 		//Startfunktion nicht gefunden:
-		printErrorMessage("fatalError> ", ReturnValueTypes.ERROR_NO_MAIN_FUNCTION, "");
-		return;
+		return ReturnValueTypes.ERROR_NO_MAIN_FUNCTION;
+	}
+	
+	
+	
+	/**
+	 * Diese Methode durchlaeuft den Quellcode
+	 * @param psFileName
+	 * 
+	 * @return	Fehlermeldung.
+	 */
+	private int extractSourceCode(String psFileName) {
+		//Quellcode in Tokens umsetzten:
+		ReturnValue<LinkedList<String>> outputFileScannerObj = new ReturnValue<LinkedList<String>>();
+		outputFileScannerObj = FileScanner.readFile(psFileName);
+		if (outputFileScannerObj.getExecutionInformation() != ReturnValueTypes.SUCCESS) {
+			//Es kam zu einem Fehler:
+			return outputFileScannerObj.getExecutionInformation();
+		}
+		lsSourceCode.addAll(outputFileScannerObj.getReturnValue());
+		
+		//Quellcode Ausdruck fuer Ausdruck durchlaufen:
+		for (int i = 0; i < lsSourceCode.size(); i++) {
+			ReturnValue<Object> returnObj = new ReturnValue<Object>(); //Rueckgabewert des Tokenizers.
+			
+			LinkedList<Token> lTokensObj = new LinkedList<Token>(); //Speichert den aktuellen Ausdruck im Quellcode als Tokens.
+			lTokensObj.addAll(tokenizerObj.tokenize(lsSourceCode.get(i)));
+			
+			//Jeden Ausdruck in eine Funktion umwandeln:
+			Token tokenObj = lTokensObj.poll();
+			if (!tokenObj.getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
+				//Der erste Token ist keien geoeffnete Klammer: Syntaxfehler
+				return ReturnValueTypes.ERROR_SYNTAX;
+			}
+			tokenObj = lTokensObj.poll();
+			if (tokenObj.getValue().equals(KeywordTypes.KEYWORD_DEFINE)) {
+				//Neue Funktion wird definiert:
+				Function newFunctionObj = new Function(lTokensObj); //Speichert die Funktion.
+				//Herausfinden, ob eine Funktion mit demselben Namen bereits definiert wurde:
+				for (int j = 0; j < lFunctionsObj.size(); j++) {
+					if (lFunctionsObj.get(j).getName().equals(newFunctionObj.getName())) {
+						//Der Name der aktuellen Funktion wurde bereits durch eine andere Funktion registriert:
+						return ReturnValueTypes.ERROR_FUNCTION_NAME_IS_IDENTICAL;
+					}
+				}
+				
+				lFunctionsObj.add(newFunctionObj);
+			}
+			else if (tokenObj.getValue().equals(KeywordTypes.KEYWORD_CLASS)) {
+				//Neue Klasse wird definiert:
+				lClassesObj.add(new Class(lTokensObj));
+			}
+			else if (tokenObj.getValue().equals(KeywordTypes.KEYWORD_IMPORT)) {
+				//Es soll eine neue Quellcode-Datei importiert werden:
+				if (lTokensObj.peek().getType().equals(TokenTypes.TOKEN_STRING)) {
+					//Naechster Token stellt einen String dar, der moeglicherweise den Namen der Quellcode-Datei darstellt:
+					try {
+						LinkedList<String> lsOldSourceCode = new LinkedList<String>(); //Speichert den alten Quellcode.
+						lsOldSourceCode.addAll(lsSourceCode);
+						lsSourceCode.clear();
+						int nReturnValue = extractSourceCode(lTokensObj.poll().getValue()); //Fuegt die neue Quellcode-Datei dieser Instanz des Interpreters hinzu.
+						if (nReturnValue != ReturnValueTypes.SUCCESS) {
+							//Es ist ein Fehler aufgetreten:
+							return nReturnValue;
+						}
+						//Alten Quellcode wieder hinzufuegen:
+						lsSourceCode.clear();
+						lsSourceCode.addAll(lsOldSourceCode);
+					}
+					catch (StackOverflowError exceptionObj) {
+						//Es kam zu einem StackOverflowError -> Die "import"-Schluesselwoerter wurden fehlerhaft verwendet:
+						return ReturnValueTypes.ERROR_IMPORT_STACK_OVERFLOW;
+					}
+				}
+			}
+			else {
+				//Erstes Schluesselwort ist nicht "defun" oder "class": Dyntaxfehler
+				return ReturnValueTypes.ERROR_SYNTAX;
+			}
+		}
+		//Der Quellcode wurde erfolgreich zerteilt und dem Interpreter hinzugefuegt:
+		return ReturnValueTypes.SUCCESS;
 	}
 	
 	
@@ -187,7 +241,6 @@ public class Controller {
 		}
 		if (nOpenBrackets != nCloseBrackets) {
 			//Es wurden nicht gleich viele Klammern geoeffnet und geschlossen:
-			//An dieser Stelle wird der Syntaxfehler erzeugt, welcher eine erfolgreiche Rekursion verhindert! WARUM? I DO NOT KNOW :( <-----------------------------------------
 			return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_SYNTAX);
 		}
 		
@@ -216,7 +269,6 @@ public class Controller {
 						
 						Token variableValueObj = new Token(null, null); //Speichert den Wert der Variablen.
 						variableValueObj = plTokensObj.poll();
-						//-----------------------------------------------------------------------------
 						if (variableValueObj.getType().equals(TokenTypes.TOKEN_BRACKET_OPENED)) {
 							//Es handelt sich um eine Subrechnung:
 							LinkedList<Token> lCalculationTokensObj = new LinkedList<Token>();
@@ -286,8 +338,6 @@ public class Controller {
 							//Es ist ein nicht angebrachter Token vorhanden -> SYNTAX FEHLER:
 							return new ReturnValue<Object>(null, ReturnValueTypes.ERROR_SYNTAX);
 						}
-						//-----------------------------------------------------------------------------
-						
 					}
 					else {
 						//Die Variable soll nicht initialisiert werden:
@@ -1558,92 +1608,6 @@ public class Controller {
 	
 	
 	/**
-	 * Diese Methode gibt Fehlermeldungen in der Konsole aus.
-	 * 
-	 * @param psPrefix			Text, welcher vor der Fehlermeldung angezeigt werden soll.
-	 * @param pnErrorMessage	Fehlermeldung.
-	 * @param psSuffix			Text, welcher nach der Fehlermeldung angezeigt werden soll.
-	 */
-	private void printErrorMessage(String psPrefix, int pnErrorMessage, String psSuffix) {
-		System.out.print(psPrefix); //Prefix ausgeben.
-		
-		//Fehlermeldung ausgeben:
-		if (pnErrorMessage == ReturnValueTypes.SUCCESS) {
-			System.out.print("Success");
-		}
-		else if (pnErrorMessage == ReturnValueTypes.ERROR_UNKNOWN) {
-			System.out.print("Unknown");
-		}
-		else if (pnErrorMessage == ReturnValueTypes.ERROR_DIVIDE_BY_ZERO) {
-			System.out.print("Cannot divide by zero");
-		}
-		else if (pnErrorMessage == ReturnValueTypes.ERROR_UNEQUAL_DATA) {
-			System.out.print("Operands are of different type");
-		}
-		else if (pnErrorMessage == ReturnValueTypes.ERROR_SYNTAX) {
-			System.out.print("Syntax");
-		}
-		else if (pnErrorMessage == ReturnValueTypes.ERROR_UNKNOWN_OPERATOR) {
-			System.out.print("Unknown operator");
-		}
-		else if (pnErrorMessage == ReturnValueTypes.ERROR_UNKNOWN_IDENTIFIER) {
-			System.out.print("Unknown identifier");
-		}
-		else if (pnErrorMessage == ReturnValueTypes.ERROR_NOT_ENOUGH_OPERANDS) {
-			System.out.print("The operation needs more operands");
-		}
-		else if (pnErrorMessage == ReturnValueTypes.ERROR_CANNOT_OFFSET_STRING_TO_NUMBER) {
-			System.out.print("Cannot offset String to number");
-		}
-		else if (pnErrorMessage == ReturnValueTypes.ERROR_UNKNOWN_TOKEN) {
-			System.out.print("Encountered unknown token.");
-		}
-		else if (pnErrorMessage == ReturnValueTypes.ERROR_UNKNOWN_KEYWORD) {
-			System.out.print("Encountered onknown keyword");
-		}
-		else if (pnErrorMessage == ReturnValueTypes.ERROR_VARIABLE_NAME_DOES_EXIST) {
-			System.out.print("Variable name does already exist");
-		}
-		else if (pnErrorMessage == ReturnValueTypes.ERROR_FILE_DOES_NOT_EXIST) {
-			System.out.print("File does not exist");
-		}
-		else if (pnErrorMessage == ReturnValueTypes.ERROR_FILE_CANNOT_BE_READ) {
-			System.out.print("Cannot read file");
-		}
-		else if (pnErrorMessage == ReturnValueTypes.ERROR_NO_MAIN_FUNCTION) {
-			System.out.print("Main function is missing");
-		}
-		else if (pnErrorMessage == ReturnValueTypes.ERROR_MAIN_FUNCTION_HAS_PARAMETER) {
-			System.out.print("Main function has too many parameters");
-		}
-		else if (pnErrorMessage == ReturnValueTypes.ERROR_INCORRECT_PARAMETER_NUMBER) {
-			System.out.print("Function call has an incorrect number of arguments");
-		}
-		else if (pnErrorMessage == ReturnValueTypes.ERROR_NO_RETURN_VALUE) {
-			System.out.print("Non-existing return value was expected");
-		}
-		else if (pnErrorMessage == ReturnValueTypes.ERROR_INSTANCE_NAME_DOES_EXIST) {
-			System.out.print("The name of an instance is already used");
-		}
-		else if (pnErrorMessage == ReturnValueTypes.ERROR_INSTANCE_NAME_CANNOT_BE_CLASS_NAME) {
-			System.out.print("Instance name cannot be class name");
-		}
-		else if (pnErrorMessage == ReturnValueTypes.ERROR_UNKNOWN_CLASS) {
-			System.out.print("Unknown class type");
-		}
-		else if (pnErrorMessage == ReturnValueTypes.ERROR_STACK_OVERFLOW) {
-			System.out.print("StackOverflow");
-		}
-		else {
-			System.out.print("unknwon error occured. Error message: " + pnErrorMessage);
-		}
-		
-		System.out.println(psSuffix); //Suffix ausgeben.
-	}
-	
-	
-	
-	/**
 	 * Diese Methode ueberpruft, ob es sich bei dem als Parameter angegebenen String um eine Zahl handelt.
 	 * 
 	 * @param psNumber	String, welcher ueberprueft werden soll.
@@ -1725,4 +1689,5 @@ public class Controller {
 		}
 		return new ReturnValue<Object>(null, ReturnValueTypes.SUCCESS);
 	}
+	
 }

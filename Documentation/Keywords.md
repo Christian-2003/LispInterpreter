@@ -19,50 +19,57 @@ Currently, there are multiple keywords available with this Lisp dialect.
 <br/>
 
 ### Keywords regarding variables:
-[`var`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#var)
+[`var`](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Keywords.md#var)
 <br/>
 This keyword is used to declare a new variable.
 
-[`setf`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#setf)
+[`setf`](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Keywords.md#setf)
 <br/>
 This keyword is used to change the value of any variable.
 
 <br/>
 
 ### Keywords for in- and output:
-[`princ`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#princ-princln)
+[`princ`](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Keywords.md#princ-princln)
 <br/>
 This keyword is used to output anything in the terminal.
 
-[`princln`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#princ-princln)
+[`princln`](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Keywords.md#princ-princln)
 <br/>
 This keyword is used to output anything in the terminal and adds a line break afterwards.
 
-[`scan`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#scan)
+[`scan`](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Keywords.md#scan)
 <br/>
 This keyword is used to scan an input from the user.
 
 <br/>
 
 ### Keywords for control structures:
-[`if`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#if)
+[`if`](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Keywords.md#if)
 <br/>
 This keyword indicates an if-statement.
 
-[`while`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#while)
+[`while`](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Keywords.md#while)
 <br/>
 This keyword indicates a while-loop.
 
 <br/>
 
 ### Keywords for functions:
-[`defun`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#defun)
+[`defun`](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Keywords.md#defun)
 <br/>
 This keyword is used to define a new function.
 
-[`return`](https://github.com/ChosenChris/LispInterpreter/tree/main/Keywords.md#return)
+[`return`](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Keywords.md#return)
 <br/>
 This keyword is used to exit a function and return a value.
+
+<br/>
+
+### Other keywords:
+[`import`](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Keywords.md#import)
+<br/>
+This keyword is used to import source code from another file.
 
 <br/>
 <br/>
@@ -340,6 +347,40 @@ This element is returned by the function.
 
 (defun mul (a b) (
     (returns (* a b)) ;Returns the result of the arithmetic operation a * b.
+))
+```
+
+<br/>
+<br/>
+<br/>
+
+## `import`:
+The keyword `import` is used to import source code from another file. The functions etc. of the other file can be used in the current file as well.
+<br/>
+**IMPORTANT:** Please make sure that you do not create a StackOverflow when using the import statement.
+
+<br/>
+
+### Further elements in this list:
+_file name_
+<br/>
+This element represents the file name, which should be imported.
+
+<br/>
+
+### Example:
+```Lisp
+;File: code.lsp
+(defun mul (a b) (
+    (return (* a b))
+))
+```
+```Lisp
+;File: main.lsp
+(import "code.lsp")
+
+(defun main () (
+    (princ mul(2 5)) ;Calls the "mul()"-function from the other file.
 ))
 ```
 

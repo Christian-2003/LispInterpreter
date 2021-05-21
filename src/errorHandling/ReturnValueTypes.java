@@ -155,4 +155,14 @@ public class ReturnValueTypes {
 	 * Speichert die Fehlermeldung fuer ein unbekanntes Steuerzeichen.
 	 */
 	public static int ERROR_UNKNOWN_CTRL_CHAR = 24;
+	
+	/**
+	 * Speichert die Fehlermeldung fuer einen Funktionsnamen, der mehrmals vorkommt.
+	 */
+	public static int ERROR_FUNCTION_NAME_IS_IDENTICAL = 25;
+	
+	/**
+	 * Speichert die Fehlermeldung fuer import-Schluesselwoerter, die einen StackOverflow erzeugen.
+	 */
+	public static int ERROR_IMPORT_STACK_OVERFLOW = 26;
 }

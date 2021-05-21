@@ -229,43 +229,38 @@ public class Interpreter {
 		
 		//Zahlen verrechnen:
 		if (ptAbstractSyntaxTree.getContent().getType().equals(TokenTypes.TOKEN_OPERATOR)) {
-			switch (ptAbstractSyntaxTree.getContent().getValue()) {
-			case "+":
+			if (ptAbstractSyntaxTree.getContent().getValue().equals("+")) {
 				//Addition:
-				ReturnValue<Double> r1 = new ReturnValue<Double>((double)(nLeftOperand + nRightOperand), ReturnValueTypes.SUCCESS);
-				return r1;
-			
-			case "-":
+				return new ReturnValue<Double>((double)(nLeftOperand + nRightOperand), ReturnValueTypes.SUCCESS);
+			}
+			else if (ptAbstractSyntaxTree.getContent().getValue().equals("-")) {
 				//Subtraktion:
-				ReturnValue<Double> r2 = new ReturnValue<Double>((double)(nLeftOperand - nRightOperand), ReturnValueTypes.SUCCESS);
-				return r2;
-				
-			case "*":
+				return new ReturnValue<Double>((double)(nLeftOperand - nRightOperand), ReturnValueTypes.SUCCESS);
+			}
+			else if (ptAbstractSyntaxTree.getContent().getValue().equals("*")) {
 				//Multiplikation:
-				ReturnValue<Double> r3 = new ReturnValue<Double>((double)(nLeftOperand * nRightOperand), ReturnValueTypes.SUCCESS);
-				return r3;
-				
-			case "/":
+				return new ReturnValue<Double>((double)(nLeftOperand * nRightOperand), ReturnValueTypes.SUCCESS);
+			}
+			else if (ptAbstractSyntaxTree.getContent().getValue().equals("/")) {
 				//Division:
 				//Sonderfaelle:
 				if (nRightOperand == 0) {
 					//Rechter Operand 0 -> FEHLER:
-					ReturnValue<Double> r4 = new ReturnValue<Double>(0.0, ReturnValueTypes.ERROR_DIVIDE_BY_ZERO);
-					return r4;
+					return new ReturnValue<Double>(0.0, ReturnValueTypes.ERROR_DIVIDE_BY_ZERO);
 				}
-				ReturnValue<Double> r5 = new ReturnValue<Double>((double)(nLeftOperand / nRightOperand), ReturnValueTypes.SUCCESS);
-				return r5;
-				
-			default:
+				return new ReturnValue<Double>((double)(nLeftOperand / nRightOperand), ReturnValueTypes.SUCCESS);
+			}
+			else if (ptAbstractSyntaxTree.getContent().getValue().equals(KeywordTypes.OPERATOR_MODULO)) {
+				return new ReturnValue<Double>((double)(nLeftOperand % nRightOperand), ReturnValueTypes.SUCCESS);
+			}
+			else {
 				//Unbekannter Operator -> FEHLER:
-				ReturnValue<Double> r6 = new ReturnValue<Double>(0.0, ReturnValueTypes.ERROR_UNKNOWN_OPERATOR);
-				return r6;
+				return new ReturnValue<Double>(0.0, ReturnValueTypes.ERROR_UNKNOWN_OPERATOR);
 			}
 		}
 		else {
 			//Es gibt keinen gueltigen Operator -> FEHLER:
-			ReturnValue<Double> r7 = new ReturnValue<Double>(0.0, ReturnValueTypes.ERROR_UNKNOWN_OPERATOR);
-			return r7;
+			return new ReturnValue<Double>(0.0, ReturnValueTypes.ERROR_UNKNOWN_OPERATOR);
 		}
 	}
 	

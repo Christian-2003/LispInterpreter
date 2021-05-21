@@ -99,7 +99,7 @@ This character represents a form feed.
 
 <br/>
 
-## `r`:
+## `\r`:
 This character represents a carriage return.
 
 <br/>

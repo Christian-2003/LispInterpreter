@@ -186,6 +186,9 @@ public class Tokenizer {
 				else if (sIdentifier.equals(KeywordTypes.KEYWORD_RETURN)) {
 					currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
 				}
+				else if (sIdentifier.equals(KeywordTypes.KEYWORD_IMPORT)) {
+					currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
+				}
 				else if (sIdentifier.equals(KeywordTypes.BOOLEAN_T)) {
 					currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_BOOLEAN);
 				}
@@ -231,6 +234,9 @@ public class Tokenizer {
 			currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
 		}
 		else if (sIdentifier.equals(KeywordTypes.KEYWORD_RETURN)) {
+			currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
+		}
+		else if (sIdentifier.equals(KeywordTypes.KEYWORD_IMPORT)) {
 			currentTokenObj = new Token(sIdentifier, TokenTypes.TOKEN_KEYWORD);
 		}
 		else if (sIdentifier.equals(KeywordTypes.BOOLEAN_T)) {
@@ -319,7 +325,7 @@ public class Tokenizer {
 				return lTokens;
 			}
 			
-			else if (chCurrentCharacter == '+' || chCurrentCharacter == '-' || chCurrentCharacter == '*' || chCurrentCharacter == '/') {
+			else if (chCurrentCharacter == '+' || chCurrentCharacter == '-' || chCurrentCharacter == '*' || chCurrentCharacter == '/' || chCurrentCharacter == KeywordTypes.OPERATOR_MODULO.charAt(0)) {
 				//Operator:
 				i = tokenizeOperator(i);
 			}

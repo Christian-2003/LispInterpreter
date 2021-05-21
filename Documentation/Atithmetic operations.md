@@ -32,7 +32,7 @@ The result of such arithmetic operations can be used in the source code for diff
 <br/>
 
 # Available arithmetic operators:
-Currently, there are a total of four operators, which can be used in arithmetic operations:
+Currently, there are a total of five operators, which can be used in arithmetic operations:
 
 <br/>
 
@@ -79,6 +79,18 @@ The operator `/` is used to divide multiple values. Remember that there is no kn
 ```Lisp
 (defun main () (
     (princ (/ 10 2)) ;Translates to: 10 / 2
+))
+```
+
+<br/>
+
+## The operator `%`:
+The operator `%` is used to get the rest of a division.
+
+### Example:
+```Lisp
+(defun main () (
+    (princ (% 5 2)) ;Translates to 5 % 2
 ))
 ```
 

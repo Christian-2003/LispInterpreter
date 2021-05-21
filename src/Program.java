@@ -1,5 +1,6 @@
 import java.util.Scanner;
 
+import errorHandling.ReturnValueTypes;
 import interpreter.*;
 
 
@@ -57,8 +58,11 @@ public class Program {
 				String sFilename = sInput.substring(sInput.indexOf(' ') + 1, sInput.length());
 				//Quellcode ueber den Controller ausfueheren:
 				Controller controllerObj = new Controller(sFilename);
-				controllerObj.startController();
+				int nReturnValue = controllerObj.startController();
 				System.out.println("\n");
+				if (nReturnValue != ReturnValueTypes.SUCCESS) {
+					printErrorMessage("Error: ", nReturnValue, "\n");
+				}
 			}
 			
 			else {
@@ -66,5 +70,94 @@ public class Program {
 				System.out.println("Error: The command \"" + sInput + "\" is incorrect.\n");
 			}
 		}
+	}
+	
+	
+	
+	/**
+	 * Diese Methode gibt Fehlermeldungen in der Konsole aus.
+	 * 
+	 * @param psPrefix			Text, welcher vor der Fehlermeldung angezeigt werden soll.
+	 * @param pnErrorMessage	Fehlermeldung.
+	 * @param psSuffix			Text, welcher nach der Fehlermeldung angezeigt werden soll.
+	 */
+	private static void printErrorMessage(String psPrefix, int pnErrorMessage, String psSuffix) {
+		System.out.print(psPrefix); //Prefix ausgeben.
+		
+		//Fehlermeldung ausgeben:
+		if (pnErrorMessage == ReturnValueTypes.SUCCESS) {
+			System.out.print("Success");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_UNKNOWN) {
+			System.out.print("Unknown");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_DIVIDE_BY_ZERO) {
+			System.out.print("Cannot divide by zero");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_UNEQUAL_DATA) {
+			System.out.print("Operands are of different type");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_SYNTAX) {
+			System.out.print("Syntax");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_UNKNOWN_OPERATOR) {
+			System.out.print("Unknown operator");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_UNKNOWN_IDENTIFIER) {
+			System.out.print("Unknown identifier");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_NOT_ENOUGH_OPERANDS) {
+			System.out.print("The operation needs more operands");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_CANNOT_OFFSET_STRING_TO_NUMBER) {
+			System.out.print("Cannot offset String to number");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_UNKNOWN_TOKEN) {
+			System.out.print("Encountered unknown token.");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_UNKNOWN_KEYWORD) {
+			System.out.print("Encountered onknown keyword");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_VARIABLE_NAME_DOES_EXIST) {
+			System.out.print("Variable name does already exist");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_FILE_DOES_NOT_EXIST) {
+			System.out.print("File does not exist");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_FILE_CANNOT_BE_READ) {
+			System.out.print("Cannot read file");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_NO_MAIN_FUNCTION) {
+			System.out.print("Main function is missing");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_MAIN_FUNCTION_HAS_PARAMETER) {
+			System.out.print("Main function has too many parameters");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_INCORRECT_PARAMETER_NUMBER) {
+			System.out.print("Function call has an incorrect number of arguments");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_NO_RETURN_VALUE) {
+			System.out.print("Non-existing return value was expected");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_INSTANCE_NAME_DOES_EXIST) {
+			System.out.print("The name of an instance is already used");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_INSTANCE_NAME_CANNOT_BE_CLASS_NAME) {
+			System.out.print("Instance name cannot be class name");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_UNKNOWN_CLASS) {
+			System.out.print("Unknown class type");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_STACK_OVERFLOW) {
+			System.out.print("StackOverflow");
+		}
+		else if (pnErrorMessage == ReturnValueTypes.ERROR_FUNCTION_NAME_IS_IDENTICAL) {
+			System.out.println("Multiple functions are defined with the same name");
+		}
+		else {
+			System.out.print("unknwon error occured. Error message: " + pnErrorMessage);
+		}
+		
+		System.out.println(psSuffix); //Suffix ausgeben.
 	}
 }
