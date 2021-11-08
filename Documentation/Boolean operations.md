@@ -12,7 +12,7 @@ The boolean _true_ is in this Lisp Interpreter represented through the value `T`
 
 <br/>
 
-If a condition is true, the value `T` is returned. On the other hand, if a condition is considered to be false, the value `NIL` will be returned. Such conditions can be found in [if-statements](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Keywords.md#if) or [while-loops](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Keywords.md#while).
+If a condition is true, the value `T` is returned. On the other hand, if a condition is considered to be false, the value `NIL` will be returned. Such conditions can be found in [if-statements](https://github.com/Christian-2003/LispInterpreter/blob/main/Documentation/Keywords.md#if) or [while-loops](https://github.com/Christian-2003/LispInterpreter/blob/main/Documentation/Keywords.md#while).
 
 <br/>
 

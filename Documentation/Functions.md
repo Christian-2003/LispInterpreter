@@ -20,7 +20,7 @@ A function definition consists of exactly four elements: The keyword `defun`, th
 <br/>
 
 ### The keyword:
-The keyword `defun` takes the first place in a function definition. It indicates that a new function is defined. For further information, look up the [defun](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Keywords.md#defun) keyword.
+The keyword `defun` takes the first place in a function definition. It indicates that a new function is defined. For further information, look up the [defun](https://github.com/Christian-2003/LispInterpreter/blob/main/Documentation/Keywords.md#defun) keyword.
 
 <br/>
 
@@ -35,7 +35,7 @@ The next element represents a list of parameters. Everytime a function is called
 <br/>
 
 ### A list of expressions:
-The last element of the function definition represents a list with all the expressions, that are executed whenever the function is called. For further information on possible expressions, look up the [list of available keywords](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Keywords.md).
+The last element of the function definition represents a list with all the expressions, that are executed whenever the function is called. For further information on possible expressions, look up the [list of available keywords](https://github.com/Christian-2003/LispInterpreter/blob/main/Documentation/Keywords.md).
 
 <br/>
 
@@ -57,7 +57,7 @@ The last element of the function definition represents a list with all the expre
 <br/>
 
 ## Return values:
-Whenever the interpreter encounters the [`return`](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Keywords.md#return)-keyword, the function's execution is terminated.
+Whenever the interpreter encounters the [`return`](https://github.com/Christian-2003/LispInterpreter/blob/main/Documentation/Keywords.md#return)-keyword, the function's execution is terminated.
 
 This keyword can be used to return any value (e.g. a number, a String, a Boolean) can be returned by the function and used within another point of the source code. If you do not specify any value to be returned, the value _0.00_ is simply returned.
 
@@ -191,6 +191,6 @@ The Interpreter supports recursion with all it's beauty. I won't go into any fur
 ## Predefined functions:
 There are multiple predefined functions that can be used with the Lisp interpreter.
 
-The documentation of these functions can be found [here](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Predefined%20functions.md).
+The documentation of these functions can be found [here](https://github.com/Christian-2003/LispInterpreter/blob/main/Documentation/Predefined%20functions.md).
 
 <br/>

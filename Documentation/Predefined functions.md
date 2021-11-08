@@ -8,41 +8,41 @@ Predefined functions are functions, which are encoded into the source code of th
 # List of predefined functions:
 
 ### Mathematical functions:
-[`sin`](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Predefined%20functions.md#sin)
+[`sin`](https://github.com/Christian-2003/LispInterpreter/blob/main/Documentation/Predefined%20functions.md#sin)
 <br/>
 Returns the sine value of a specified position.
 
-[`cos`](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Predefined%20functions.md#cos)
+[`cos`](https://github.com/Christian-2003/LispInterpreter/blob/main/Documentation/Predefined%20functions.md#cos)
 <br/>
 Returns the cosine value of a specified position.
 
-[`tan`](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Predefined%20functions.md#tan)
+[`tan`](https://github.com/Christian-2003/LispInterpreter/blob/main/Documentation/Predefined%20functions.md#tan)
 <br/>
 Returns the tangency value of a specified position.
 
-[`sqrt`](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Predefined%20functions.md#sqrt)
+[`sqrt`](https://github.com/Christian-2003/LispInterpreter/blob/main/Documentation/Predefined%20functions.md#sqrt)
 <br/>
 Returns the square root of the specified number.
 
 <br/>
 
 ### String functions:
-[`length`](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Predefined%20functions.md#length)
+[`length`](https://github.com/Christian-2003/LispInterpreter/blob/main/Documentation/Predefined%20functions.md#length)
 <br/>
 Returns the length of the specified string.
 
-[`substr`](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Predefined%20functions.md#substr)
+[`substr`](https://github.com/Christian-2003/LispInterpreter/blob/main/Documentation/Predefined%20functions.md#substr)
 <br/>
 Returns a substring.
 
-[`charAt`](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Predefined%20functions.md#charAt)
+[`charAt`](https://github.com/Christian-2003/LispInterpreter/blob/main/Documentation/Predefined%20functions.md#charAt)
 <br/>
 Returns the character at the specified position of the string.
 
 <br/>
 
 ### Not specified:
-[`isNumber`](https://github.com/ChosenChris/LispInterpreter/blob/main/Documentation/Predefined%20functions.md#isNumber)
+[`isNumber`](https://github.com/Christian-2003/LispInterpreter/blob/main/Documentation/Predefined%20functions.md#isNumber)
 <br/>
 Returns, wether the specified input represents a number.
 
